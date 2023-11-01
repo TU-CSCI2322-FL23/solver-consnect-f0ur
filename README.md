@@ -8,3 +8,5 @@ Natalie Marie Tiglao,
 Clarissa Garcia
 
 This is our implementation of connect 4 in Haskell.
+
+can you read this
