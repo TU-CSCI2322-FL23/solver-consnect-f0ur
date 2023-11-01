@@ -39,4 +39,3 @@ gameWin = undefined
 columnFull :: Column -> Bool 
 columnFUll givenColumn = if length $ givenColumn == 6 then True else False
 --6 can change, if you want it to be 7x7, then change that value to 7
-
