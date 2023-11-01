@@ -27,3 +27,5 @@ type Game = (Board, Color)
 -- Who won?
 type Winner = Color
 
+type Move = String
+
