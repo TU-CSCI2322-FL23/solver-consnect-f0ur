@@ -7,4 +7,4 @@ Samuel Vader,
 Natalie Marie Tiglao,
 Clarissa Garcia
 
-This is our implementation of connect 4 in Haskell.
+This is our implementation of Connect Four in Haskell.
