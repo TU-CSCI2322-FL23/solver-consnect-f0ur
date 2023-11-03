@@ -2,10 +2,12 @@
 {-# HLINT ignore "Use newtype instead of data" #-}
 {-# HLINT ignore "Eta reduce" #-}
 
+import Data.List (transpose)
+
 --Disk = what you play with 
 --Color = what gets dropped in /Player 
 --tile = indiviual holes in the board
---board 6x7 columns and rows, 42 holes in totßal  
+--board 7 columns 6 rows, 42 holes in totßal  
 
 
 --Column number (inputed by player when making move)
@@ -17,7 +19,8 @@
 type Column = [Color]
 
 --Possibilities of states for the holes on the board
-data Color = Yellow | Red deriving (Eq, Show)
+-- We don't derive Show because we have a custom one!
+data Color = Yellow | Red deriving (Eq)
 
 data Winner = Win Color | Stalemate deriving (Eq, Show) -- define win
 
@@ -27,21 +30,35 @@ type Board = [Column]
 --Board in game and the color of the players turn
 type Game = (Board, Color)
 
+-- 0 to 6 (makes it easier to code; we can change it to 1 to 7 later)
 type Move = Int
 
 -- METH  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-makeMove :: Game -> Move -> Game
-makeMove = undefined
+-- Make the board (finished?) --
 
---sees if anyone in the game has won.
-gameWin :: Game -> Winner 
-gameWin = undefined
+emptyColumn :: Column
+emptyColumn = []
+
+emptyBoard :: Board
+emptyBoard = replicate 7 emptyColumn
+
+-- Making the game --
 
 --checks if the column is full
 columnFull :: Column -> Bool 
 columnFull givenColumn = length givenColumn == 6
---6 can change, if you want it to be 7x7, then change that value to 7
+
+-- 4. Be able to compute the legal moves from a game state.
+makeMove :: Game -> Move -> Game
+makeMove (currentBoard, moveColor) x = moveColor : emptyColumn  
+    -- moveColumn is the column
+    where 
+        (before, after) = splitAt x currentBoard
+
+splitat :: Move -> Board -> (a, b)
+splitat = _
+        
 
 --checks if the entire board is full, indicating a draw
 --maybe add condition using gameWin?
@@ -49,7 +66,39 @@ boardFull :: Board -> Bool
 boardFull board = all columnFull board
 
 validMoves :: Game -> [Move]
-validMoves (board, turn) = undefined
+--creates a list of moves by filtering out the non-valid moves for each of the columns in the board 
+validMoves (board, turn) = filter (isValidMove (board, turn)) [0..length board - 1]
+
+--helper function for validmoves
+isValidMove :: Game -> Move -> Bool
+isValidMove (board, turn) column 
+    | column < 0 || column >= length board = False --out of bounds column index 
+    | length column >= 6 = False --the column is already full
+    | otherwise = True
+
+
+--sees if anyone in the game has won. CAG
+gameWin :: Game -> Winner 
+gameWin (board, color) = 
+    if horizontalWin board color || verticalWin board color || diagonalWin board color 
+        then Win color 
+        else Stalemate 
+        
+--checking 4 in row 
+fourInRow :: Int -> Color -> [Color] -> Bool
+fourInRow n color = any (\group -> length group >= n && all (== color) group)
+
+--horizontal win 
+horizontalWin :: Board -> Color -> Bool
+horizontalWin board color = undefined
+   
+checkHorizontal :: Color -> Column -> Bool
+checkHorizontal color column = undefined 
+    
+--vertical win 
+
+
+--diagonal win 
 
 
 
@@ -60,6 +109,31 @@ validMoves (board, turn) = undefined
 
     -- 3. Be able to compute the result of making a legal move in a game state.
 
-    -- 4. Be able to compute the legal moves from a game state.
-
     -- 5. (If time) Be able to pretty-print a game into a string.
+
+
+-- test board for debugging
+testBoard :: Board
+testBoard = [[Yellow, Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Yellow, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Yellow, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Yellow, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red]]
+
+-- We can't print each column vertically, so we first just get a string of all the elements in a row
+printRow :: [Color] -> String
+printRow [] = ""
+printRow lst = foldr (\x y -> show x ++ " " ++ y) "" lst
+
+-- Prints out a pretty-looking connect four board
+printBoard :: Board -> String
+printBoard [] = ""
+printBoard (x:xs) = printRow x ++ "\n" ++ printBoard xs
+
+-- print all the rows but then transpose them to be
+instance Show Board where
+    show :: Board -> String
+    show board = printBoard (transpose board)
+
+instance Show Color where
+    show :: Color -> String
+    show color = 
+        if color == Yellow 
+            then "Y" 
+            else "R"
