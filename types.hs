@@ -77,7 +77,7 @@ isValidMove (board, turn) column
     | otherwise = True
 
 
---sees if anyone in the game has won. CAG
+--sees if anyone in the game has won. CAG  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 gameWin :: Game -> Winner 
 gameWin (board, color) = 
     if horizontalWin board color || verticalWin board color || diagonalWin board color 
@@ -93,16 +93,36 @@ horizontalWin :: Board -> Color -> Bool
 horizontalWin board color = undefined
    
 checkHorizontal :: Color -> Column -> Bool
-checkHorizontal color column = undefined 
+checkHorizontal color column = 
+    fourInRow 4 color column 
     
 --vertical win 
-
+verticalWin :: Board -> Color -> Bool
+verticalWin board color = 
+    horizontalWin (transpose board) color
 
 --diagonal win 
+diagonalWin :: Board -> Color -> Bool
+diagonalWin board color =
+    any (checkDiagonal color) (diagonals board)
+
+checkDiagonal :: Color -> [Color] -> Bool
+checkDiagonal color diagonal=
+    fourInRow 4 color diagonal
+
+-- all diagonals in a board
+diagonals :: Board -> [Column]
+diagonals board = diagonalRows (transpose board) ++ diagonalRows (transpose (reverseColumns board))
+  where
+    diagonalRows [] = []
+    diagonalRows ([] : _) = []
+    diagonalRows board' = head board' : diagonalRows (map tail board')
+    
+    reverseColumns = map reverse
 
 
 
-    -- STORIES
+    -- STORIES 
     -- 1. Define data types or type aliases for a player, game state, move, and winner.
 
     -- 2. Be able to determine who has won the game state, if anyone.
