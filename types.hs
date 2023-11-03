@@ -19,9 +19,7 @@ type Column = [Color]
 --Possibilities of states for the holes on the board
 data Color = Yellow | Red deriving (Eq, Show)
 
-data Condition = Win | Stalemate
-
-type Win = Color
+data Winner = Win Color | Stalemate deriving (Eq, Show) -- define win
 
 --List of the states for the holes for the whole board
 type Board = [Column]
@@ -29,17 +27,15 @@ type Board = [Column]
 --Board in game and the color of the players turn
 type Game = (Board, Color)
 
--- Who won? red , yellow
-type Winner = Condition
-
+type Move = Int
 
 -- METH  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-makeMove :: Board -> Color -> Column -> Board
+makeMove :: Game -> Move -> Game
 makeMove = undefined
 
 --sees if anyone in the game has won.
-gameWin :: Board -> Winner 
+gameWin :: Game -> Winner 
 gameWin = undefined
 
 --checks if the column is full
@@ -51,6 +47,11 @@ columnFull givenColumn = length givenColumn == 6
 --maybe add condition using gameWin?
 boardFull :: Board -> Bool
 boardFull board = all columnFull board
+
+validMoves :: Game -> [Move]
+validMoves (board, turn) = undefined
+
+
 
     -- STORIES
     -- 1. Define data types or type aliases for a player, game state, move, and winner.
