@@ -49,6 +49,7 @@ emptyBoard = replicate 7 emptyColumn
 columnFull :: Column -> Bool
 columnFull givenColumn = length givenColumn == 6
 
+
 -- may need to add check for valid move
 makeMove :: Game -> Move -> Game
 makeMove (currentBoard, moveColor) x = 
@@ -80,40 +81,51 @@ isValidMove (board, turn) column
 
 
 --sees if anyone in the game has won. CAG  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-gameWin :: Game -> Winner
-gameWin (board, color) =
-    if horizontalWin board color || verticalWin board color || diagonalWin board color
-        then Win color
-        else Stalemate
 
---checking 4 in row 
---any takes a sublist of colors in the column which allows us to check if consecutive colors are the same
---is this necessary?
-fourInRow :: Int -> Color -> [Color] -> Bool
-fourInRow color = any (\group -> length group >= 4 && all (== color) group)
 
+-- Determines the winner of the game based on the current game state.
+gameWin :: Game -> Winner 
+gameWin (board, color) = 
+    if horizontalWin board color || verticalWin board color || diagonalWin board color 
+        then Win color 
+        else Stalemate 
+        
+-- Group the colors in a column into groups of 4 to check for consecutive colors.
+group4 :: Column -> [Column]
+group4 [] = []
+group4 column
+    | length column < 4 = []  -- If there are less than 4 colors, there can't be a group of 4.
+    | otherwise = take 4 column : group4 (tail column)
+
+-- Check for horizontal wins on the game board.
 horizontalWin :: Board -> Color -> Bool
-horizontalWin board color = undefined
+horizontalWin board color =
+    any (\column -> checkHorizontal color column) board
 
+-- Check for a horizontal win within a single column.
 checkHorizontal :: Color -> Column -> Bool
 checkHorizontal color column =
-    fourInRow 4 color column
+    any (\group -> length group >= 4 && all (== color) group) (group4 column)
+    
+-- Check for vertical wins on the transposed game board (columns become rows).
 
 --vertical win 
 verticalWin :: Board -> Color -> Bool
 verticalWin board color =
     horizontalWin (transpose board) color
 
+-- Check for diagonal wins on the game board.
 --diagonal win 
 diagonalWin :: Board -> Color -> Bool
 diagonalWin board color =
     any (checkDiagonal color) (diagonals board)
 
+-- Check for a diagonal win within a list of colors.
 checkDiagonal :: Color -> [Color] -> Bool
-checkDiagonal color diagonal=
-    fourInRow 4 color diagonal
+checkDiagonal color diagonal =
+    any (\group -> length group >= 4 && all (== color) group) (group4 diagonal)
 
--- all diagonals in a board
+-- Get all diagonals in a board by transposing the board and finding diagonal rows.
 diagonals :: Board -> [Column]
 diagonals board = diagonalRows (transpose board) ++ diagonalRows (transpose (reverseColumns board))
   where
@@ -122,6 +134,7 @@ diagonals board = diagonalRows (transpose board) ++ diagonalRows (transpose (rev
     diagonalRows board' = head board' : diagonalRows (map tail board')
 
     reverseColumns = map reverse
+
 
 
 
