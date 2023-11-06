@@ -50,11 +50,13 @@ columnFull :: Column -> Bool
 columnFull givenColumn = length givenColumn == 6
 
 -- 4. Be able to compute the legal moves from a game state.
-makeMove :: Game -> Move -> Game
-makeMove (currentBoard, moveColor) x = moveColor : emptyColumn  
-    -- moveColumn is the column
-    where 
-        (before, after) = splitAt x currentBoard
+
+
+-- makeMove :: Game -> Move -> Game
+-- makeMove (currentBoard, moveColor) x = moveColor : emptyColumn  
+--     -- moveColumn is the column
+--     where 
+--         (before, after) = splitAt x currentBoard
 
 --splits a list into two parts on the given index 
 splitAt :: Move -> Board -> (a, b)
@@ -79,6 +81,8 @@ isValidMove (board, turn) column
 
 
 --sees if anyone in the game has won. CAG  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
 gameWin :: Game -> Winner 
 gameWin (board, color) = 
     if horizontalWin board color || verticalWin board color || diagonalWin board color 
@@ -87,16 +91,21 @@ gameWin (board, color) =
         
 --checking 4 in row 
 --any takes a sublist of colors in the column which allows us to check if consecutive colors are the same
---is this necessary?
-fourInRow :: Int -> Color -> [Color] -> Bool
-fourInRow color = any (\group -> length group >= 4 && all (== color) group)
+
+group4 :: Column -> [Column]
+group4 [] = []
+group4 column
+    | length column < 4 = []  -- If there are less than 4 colors, there can't be a group of 4.
+    | otherwise = take 4 column : group4 (tail column)
+
 
 horizontalWin :: Board -> Color -> Bool
-horizontalWin board color = undefined
-   
+horizontalWin board color =
+    any (\column -> checkHorizontal color column) board
+
 checkHorizontal :: Color -> Column -> Bool
-checkHorizontal color column = 
-    fourInRow 4 color column 
+checkHorizontal color column =
+    any (\group -> length group >= 4 && all (== color) group) (group4 column)
     
 --vertical win 
 verticalWin :: Board -> Color -> Bool
@@ -109,18 +118,19 @@ diagonalWin board color =
     any (checkDiagonal color) (diagonals board)
 
 checkDiagonal :: Color -> [Color] -> Bool
-checkDiagonal color diagonal=
-    fourInRow 4 color diagonal
+checkDiagonal color diagonal =
+    any (\group -> length group >= 4 && all (== color) group) (group4 diagonal)
 
--- all diagonals in a board
+-- Get all diagonals in a board
 diagonals :: Board -> [Column]
 diagonals board = diagonalRows (transpose board) ++ diagonalRows (transpose (reverseColumns board))
   where
     diagonalRows [] = []
     diagonalRows ([] : _) = []
     diagonalRows board' = head board' : diagonalRows (map tail board')
-    
+
     reverseColumns = map reverse
+
 
 
 
