@@ -20,9 +20,9 @@ type Column = [Color]
 
 --Possibilities of states for the holes on the board
 -- We don't derive Show because we have a custom one!
-data Color = Yellow | Red deriving (Eq)
+data Color = Yellow | Red deriving (Eq, Show)
 
-data Winner = Win Color | Stalemate deriving (Eq, Show) -- define win
+data Winner = Win Color | Stalemate deriving (Eq) -- define win
 
 --List of the states for the holes for the whole board
 type Board = [Column]
@@ -58,6 +58,9 @@ makeMove (currentBoard, moveColor) x =
         in 
             (newBoard, swapColor moveColor)
 
+
+swapColor :: Color -> Color 
+swapColor color = if color == Red then Yellow else Red
 
 --checks if the entire board is full, indicating a draw
 --maybe add condition using gameWin?
@@ -153,7 +156,8 @@ instance Show Board where
 
 instance Show Color where
     show :: Color -> String
-    show color =
-        if color == Yellow
-            then "Y"
+
+    show color = 
+        if color == Yellow 
+            then "Y" 
             else "R"
