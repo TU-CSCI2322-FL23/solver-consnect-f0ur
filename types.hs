@@ -20,9 +20,9 @@ type Column = [Color]
 
 --Possibilities of states for the holes on the board
 -- We don't derive Show because we have a custom one!
-data Color = Yellow | Red deriving (Eq)
+data Color = Yellow | Red deriving (Eq, Show)
 
-data Winner = Win Color | Stalemate deriving (Eq, Show) -- define win
+data Winner = Win Color | Stalemate deriving (Eq) -- define win
 
 --List of the states for the holes for the whole board
 type Board = [Column]
@@ -55,6 +55,9 @@ makeMove (currentBoard, moveColor) x = moveColor : emptyColumn
     -- moveColumn is the column
     where 
         (before, after) = splitAt x currentBoard
+
+swapColor :: Color -> Color 
+swapColor color = if color == Red then Yellow else Red
 
 --splits a list into two parts on the given index 
 splitAt :: Move -> Board -> (a, b)
