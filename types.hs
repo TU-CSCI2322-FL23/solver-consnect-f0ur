@@ -46,25 +46,23 @@ emptyBoard = replicate 7 emptyColumn
 -- Making the game --
 
 --checks if the column is full
-columnFull :: Column -> Bool 
+columnFull :: Column -> Bool
 columnFull givenColumn = length givenColumn == 6
 
--- 4. Be able to compute the legal moves from a game state.
+-- may need to add check for valid move
 makeMove :: Game -> Move -> Game
-makeMove (currentBoard, moveColor) x = moveColor : emptyColumn  
-    -- moveColumn is the column
-    where 
-        (before, after) = splitAt x currentBoard
+makeMove (currentBoard, moveColor) x = 
+        let 
+            (before, inclusiveAfter) = splitAt x currentBoard
+            newBoard = before ++ [moveColor : head inclusiveAfter] ++ tail inclusiveAfter
+        in 
+            (newBoard, swapColor moveColor)
 
---splits a list into two parts on the given index 
-splitAt :: Move -> Board -> (a, b)
-splitAt = _
-        
 
 --checks if the entire board is full, indicating a draw
 --maybe add condition using gameWin?
 boardFull :: Board -> Bool
-boardFull board = all columnFull board
+boardFull board = all columnFull board1
 
 validMoves :: Game -> [Move]
 --creates a list of moves by filtering out the non-valid moves for each of the columns in the board 
@@ -72,19 +70,19 @@ validMoves (board, turn) = filter (isValidMove (board, turn)) [0..length board -
 
 --helper function for validmoves
 isValidMove :: Game -> Move -> Bool
-isValidMove (board, turn) column 
+isValidMove (board, turn) column
     | column < 0 || column >= length board = False --out of bounds column index 
     | length (board !! column) >= 6 = False --checks if the column is full 
     | otherwise = True
 
 
 --sees if anyone in the game has won. CAG  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-gameWin :: Game -> Winner 
-gameWin (board, color) = 
-    if horizontalWin board color || verticalWin board color || diagonalWin board color 
-        then Win color 
-        else Stalemate 
-        
+gameWin :: Game -> Winner
+gameWin (board, color) =
+    if horizontalWin board color || verticalWin board color || diagonalWin board color
+        then Win color
+        else Stalemate
+
 --checking 4 in row 
 --any takes a sublist of colors in the column which allows us to check if consecutive colors are the same
 --is this necessary?
@@ -93,14 +91,14 @@ fourInRow color = any (\group -> length group >= 4 && all (== color) group)
 
 horizontalWin :: Board -> Color -> Bool
 horizontalWin board color = undefined
-   
+
 checkHorizontal :: Color -> Column -> Bool
-checkHorizontal color column = 
-    fourInRow 4 color column 
-    
+checkHorizontal color column =
+    fourInRow 4 color column
+
 --vertical win 
 verticalWin :: Board -> Color -> Bool
-verticalWin board color = 
+verticalWin board color =
     horizontalWin (transpose board) color
 
 --diagonal win 
@@ -119,7 +117,7 @@ diagonals board = diagonalRows (transpose board) ++ diagonalRows (transpose (rev
     diagonalRows [] = []
     diagonalRows ([] : _) = []
     diagonalRows board' = head board' : diagonalRows (map tail board')
-    
+
     reverseColumns = map reverse
 
 
@@ -155,7 +153,7 @@ instance Show Board where
 
 instance Show Color where
     show :: Color -> String
-    show color = 
-        if color == Yellow 
-            then "Y" 
+    show color =
+        if color == Yellow
+            then "Y"
             else "R"
