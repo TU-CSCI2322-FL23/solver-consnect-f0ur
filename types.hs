@@ -56,8 +56,9 @@ makeMove (currentBoard, moveColor) x = moveColor : emptyColumn
     where 
         (before, after) = splitAt x currentBoard
 
-splitat :: Move -> Board -> (a, b)
-splitat = _
+--splits a list into two parts on the given index 
+splitAt :: Move -> Board -> (a, b)
+splitAt = _
         
 
 --checks if the entire board is full, indicating a draw
@@ -73,7 +74,7 @@ validMoves (board, turn) = filter (isValidMove (board, turn)) [0..length board -
 isValidMove :: Game -> Move -> Bool
 isValidMove (board, turn) column 
     | column < 0 || column >= length board = False --out of bounds column index 
-    | length column >= 6 = False --the column is already full
+    | length (board !! column) >= 6 = False --checks if the column is full 
     | otherwise = True
 
 
@@ -85,10 +86,11 @@ gameWin (board, color) =
         else Stalemate 
         
 --checking 4 in row 
+--any takes a sublist of colors in the column which allows us to check if consecutive colors are the same
+--is this necessary?
 fourInRow :: Int -> Color -> [Color] -> Bool
-fourInRow n color = any (\group -> length group >= n && all (== color) group)
+fourInRow color = any (\group -> length group >= 4 && all (== color) group)
 
---horizontal win 
 horizontalWin :: Board -> Color -> Bool
 horizontalWin board color = undefined
    
