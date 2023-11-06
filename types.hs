@@ -20,7 +20,7 @@ type Column = [Color]
 
 --Possibilities of states for the holes on the board
 -- We don't derive Show because we have a custom one!
-data Color = Yellow | Red deriving (Eq, Show)
+data Color = Yellow | Red deriving (Eq)
 
 data Winner = Win Color | Stalemate deriving (Eq) -- define win
 
@@ -66,7 +66,7 @@ swapColor color = if color == Red then Yellow else Red
 --checks if the entire board is full, indicating a draw
 --maybe add condition using gameWin?
 boardFull :: Board -> Bool
-boardFull board = all columnFull board1
+boardFull board = all columnFull board
 
 validMoves :: Game -> [Move]
 --creates a list of moves by filtering out the non-valid moves for each of the columns in the board 
