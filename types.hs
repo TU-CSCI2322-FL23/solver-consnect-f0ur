@@ -20,9 +20,9 @@ type Column = [Color]
 
 --Possibilities of states for the holes on the board
 -- We don't derive Show because we have a custom one!
-data Color = Yellow | Red deriving (Eq)
+data Color = Yellow | Red deriving (Eq, Show)
 
-data Winner = Win Color | Stalemate deriving (Eq, Show) -- define win
+data Winner = Win Color | Stalemate deriving (Eq) -- define win
 
 --List of the states for the holes for the whole board
 type Board = [Column]
@@ -46,27 +46,27 @@ emptyBoard = replicate 7 emptyColumn
 -- Making the game --
 
 --checks if the column is full
-columnFull :: Column -> Bool 
+columnFull :: Column -> Bool
 columnFull givenColumn = length givenColumn == 6
 
--- 4. Be able to compute the legal moves from a game state.
+
+-- may need to add check for valid move
+makeMove :: Game -> Move -> Game
+makeMove (currentBoard, moveColor) x = 
+        let 
+            (before, inclusiveAfter) = splitAt x currentBoard
+            newBoard = before ++ [moveColor : head inclusiveAfter] ++ tail inclusiveAfter
+        in 
+            (newBoard, swapColor moveColor)
 
 
--- makeMove :: Game -> Move -> Game
--- makeMove (currentBoard, moveColor) x = moveColor : emptyColumn  
---     -- moveColumn is the column
---     where 
---         (before, after) = splitAt x currentBoard
-
---splits a list into two parts on the given index 
-splitAt :: Move -> Board -> (a, b)
-splitAt = _
-        
+swapColor :: Color -> Color 
+swapColor color = if color == Red then Yellow else Red
 
 --checks if the entire board is full, indicating a draw
 --maybe add condition using gameWin?
 boardFull :: Board -> Bool
-boardFull board = all columnFull board
+boardFull board = all columnFull board1
 
 validMoves :: Game -> [Move]
 --creates a list of moves by filtering out the non-valid moves for each of the columns in the board 
@@ -74,13 +74,14 @@ validMoves (board, turn) = filter (isValidMove (board, turn)) [0..length board -
 
 --helper function for validmoves
 isValidMove :: Game -> Move -> Bool
-isValidMove (board, turn) column 
+isValidMove (board, turn) column
     | column < 0 || column >= length board = False --out of bounds column index 
     | length (board !! column) >= 6 = False --checks if the column is full 
     | otherwise = True
 
 
 --sees if anyone in the game has won. CAG  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 
 -- Determines the winner of the game based on the current game state.
 gameWin :: Game -> Winner 
@@ -107,9 +108,10 @@ checkHorizontal color column =
     any (\group -> length group >= 4 && all (== color) group) (group4 column)
     
 -- Check for vertical wins on the transposed game board (columns become rows).
+
 --vertical win 
 verticalWin :: Board -> Color -> Bool
-verticalWin board color = 
+verticalWin board color =
     horizontalWin (transpose board) color
 
 -- Check for diagonal wins on the game board.
@@ -167,6 +169,7 @@ instance Show Board where
 
 instance Show Color where
     show :: Color -> String
+
     show color = 
         if color == Yellow 
             then "Y" 
