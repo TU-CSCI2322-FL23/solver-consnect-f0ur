@@ -162,7 +162,6 @@ diagonalsUpRight :: Board -> [Column]
 diagonalsUpRight [] = []
 diagonalsUpRight board' = diagonalRows board' ++ diagonalsUpRight (map tail board')
 
-
 -- Get all up-left diagonals.
 diagonalsUpLeft :: Board -> [Column]
 diagonalsUpLeft [] = []
