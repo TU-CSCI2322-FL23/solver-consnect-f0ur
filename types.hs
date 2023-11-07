@@ -131,13 +131,7 @@ verticalWin :: Board -> Color -> Bool
 verticalWin board color =
     horizontalWin (transpose board) color
 
--- Check for diagonal wins on the game board.
---diagonal win 
--- Check for diagonal wins on the game board.
--- Check for diagonal wins on the game board.
--- Check for diagonal wins on the game board.
--- Check for diagonal wins on the game board.
--- Check for diagonal wins on the game board.
+
 -- Check for diagonal wins on the game board.
 diagonalWin :: Board -> Color -> Bool
 diagonalWin board color =
