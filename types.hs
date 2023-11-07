@@ -22,7 +22,7 @@ type Column = [Color]
 -- We don't derive Show because we have a custom one!
 data Color = Yellow | Red deriving (Eq)
 
-data Winner = Win Color | Stalemate deriving (Eq, Show) -- define win
+data Winner = Win Color | Stalemate deriving (Eq) -- define win
 
 --List of the states for the holes for the whole board
 type Board = [Column]
@@ -46,11 +46,21 @@ emptyBoard = replicate 7 emptyColumn
 
 -- Making the game --
 
+--tested: works
 --checks if the column is full
-columnFull :: Column -> Bool 
+columnFull :: Column -> Bool
 columnFull givenColumn = length givenColumn == 6
 
--- 4. Be able to compute the legal moves from a game state.
+
+-- may need to add check for valid move
+makeMove :: Game -> Move -> Game
+makeMove (currentBoard, moveColor) x =
+        let
+            (before, inclusiveAfter) = splitAt x currentBoard
+            newBoard = before ++ [moveColor : head inclusiveAfter] ++ tail inclusiveAfter
+        in
+            (newBoard, swapColor moveColor)
+
 
 
 -- makeMove :: Game -> Move -> Game
@@ -62,20 +72,26 @@ columnFull givenColumn = length givenColumn == 6
 --splits a list into two parts on the given index 
 -- splitAt :: Move -> Board -> (a, b)
 -- splitAt = _
-        
+
+
+swapColor :: Color -> Color
+swapColor color = if color == Red then Yellow else Red
+
 
 --checks if the entire board is full, indicating a draw
---maybe add condition using gameWin?
+--tested: works
 boardFull :: Board -> Bool
 boardFull board = all columnFull board
 
+--tested: works 
 validMoves :: Game -> [Move]
 --creates a list of moves by filtering out the non-valid moves for each of the columns in the board 
 validMoves (board, turn) = filter (isValidMove (board, turn)) [0..length board - 1]
 
+--tested: works
 --helper function for validmoves
 isValidMove :: Game -> Move -> Bool
-isValidMove (board, turn) column 
+isValidMove (board, turn) column
     | column < 0 || column >= length board = False --out of bounds column index 
     | length (board !! column) >= 6 = False --checks if the column is full 
     | otherwise = True
@@ -83,13 +99,14 @@ isValidMove (board, turn) column
 
 --sees if anyone in the game has won. CAG  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+
 -- Determines the winner of the game based on the current game state.
-gameWin :: Game -> Winner 
-gameWin (board, color) = 
-    if horizontalWin board color || verticalWin board color || diagonalWin board color 
-        then Win color 
-        else Stalemate 
-        
+gameWin :: Game -> Winner
+gameWin (board, color) =
+    if horizontalWin board color || verticalWin board color || diagonalWin board color
+        then Win color
+        else Stalemate
+
 -- Group the colors in a column into groups of 4 to check for consecutive colors.
 group4 :: Column -> [Column]
 group4 [] = []
@@ -100,17 +117,18 @@ group4 column
 -- Check for horizontal wins on the game board.
 horizontalWin :: Board -> Color -> Bool
 horizontalWin board color =
-    any (\column -> checkHorizontal color column) board
+    any (checkHorizontal color) board
 
 -- Check for a horizontal win within a single column.
 checkHorizontal :: Color -> Column -> Bool
 checkHorizontal color column =
     any (\group -> length group >= 4 && all (== color) group) (group4 column)
-    
+
 -- Check for vertical wins on the transposed game board (columns become rows).
+
 --vertical win 
 verticalWin :: Board -> Color -> Bool
-verticalWin board color = 
+verticalWin board color =
     horizontalWin (transpose board) color
 
 -- Check for diagonal wins on the game board.
@@ -150,6 +168,7 @@ diagonalsUpRight :: Board -> [Column]
 diagonalsUpRight [] = []
 diagonalsUpRight board' = diagonalRows board' ++ diagonalsUpRight (map tail board')
 
+
 -- Get all up-left diagonals.
 diagonalsUpLeft :: Board -> [Column]
 diagonalsUpLeft [] = []
@@ -164,6 +183,10 @@ diagonalRows :: Board -> [Column]
 diagonalRows [] = []
 diagonalRows ([] : _) = []
 diagonalRows board' = head board' : diagonalRows (map tail board')
+
+instance Show Winner where
+    show (Win color) = "Winner: " ++ show color
+    show Stalemate = "Stalemate"
 
 
     -- STORIES 
@@ -188,7 +211,7 @@ testBoard = [
     [Yellow, Red, Yellow, Red, Yellow, Red]
     ]
 
-winningBoard :: Board 
+winningBoard :: Board
 winningBoard = [
     [Yellow, Yellow, Yellow, Yellow, Red, Red, Red],
     [Red, Red, Red, Yellow, Red, Yellow, Yellow],
@@ -198,6 +221,10 @@ winningBoard = [
     [Red, Red, Red, Red, Yellow, Yellow, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red, Yellow]
     ]
+
+--test board for validMoves
+validMovesBoard :: Board
+validMovesBoard = [[Yellow, Red, Yellow, Red], [Red, Yellow, Red, Red, Yellow], [Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Red, Yellow], [Yellow, Yellow, Red, Yellow, Red], [Red, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red]]
 
 -- We can't print each column vertically, so we first just get a string of all the elements in a row
 printRow :: [Color] -> String
@@ -210,6 +237,7 @@ printRow lst = foldr (\x y -> show x ++ " " ++ y) "" lst
 -- printBoard (x:xs) = printRow x ++ "\n" ++ printBoard xs
 
 -- print all the rows but then transpose them to be
+
 -- instance Show Board where
 --     show :: Board -> String
 --     show board = printBoard (transpose board)
@@ -220,7 +248,8 @@ printBoard board = unlines (map printRow (transpose board))
 
 instance Show Color where
     show :: Color -> String
-    show color = 
-        if color == Yellow 
-            then "Y" 
+
+    show color =
+        if color == Yellow
+            then "Y"
             else "R"
