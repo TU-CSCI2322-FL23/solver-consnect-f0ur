@@ -45,6 +45,7 @@ emptyBoard = replicate 7 emptyColumn
 
 -- Making the game --
 
+--tested: works
 --checks if the column is full
 columnFull :: Column -> Bool
 columnFull givenColumn = length givenColumn == 6
@@ -64,14 +65,16 @@ swapColor :: Color -> Color
 swapColor color = if color == Red then Yellow else Red
 
 --checks if the entire board is full, indicating a draw
---maybe add condition using gameWin?
+--tested: works
 boardFull :: Board -> Bool
 boardFull board = all columnFull board
 
+--tested: works 
 validMoves :: Game -> [Move]
 --creates a list of moves by filtering out the non-valid moves for each of the columns in the board 
 validMoves (board, turn) = filter (isValidMove (board, turn)) [0..length board - 1]
 
+--tested: works
 --helper function for validmoves
 isValidMove :: Game -> Move -> Bool
 isValidMove (board, turn) column
@@ -154,6 +157,10 @@ instance Show Winner where
 testBoard :: Board
 testBoard = [[Yellow, Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Yellow, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Yellow, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Yellow, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red]]
 
+--test board for validMoves
+validMovesBoard :: Board
+validMovesBoard = [[Yellow, Red, Yellow, Red], [Red, Yellow, Red, Red, Yellow], [Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Red, Yellow], [Yellow, Yellow, Red, Yellow, Red], [Red, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red]]
+
 -- We can't print each column vertically, so we first just get a string of all the elements in a row
 printRow :: [Color] -> String
 printRow [] = ""
@@ -165,9 +172,9 @@ printBoard [] = ""
 printBoard (x:xs) = printRow x ++ "\n" ++ printBoard xs
 
 -- print all the rows but then transpose them to be
-instance Show Board where
+{-instance Show Board where
     show :: Board -> String
-    show board = printBoard (transpose board)
+    show board = printBoard (transpose board)-}
 
 instance Show Color where
     show :: Color -> String
