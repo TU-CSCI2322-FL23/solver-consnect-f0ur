@@ -135,7 +135,9 @@ diagonals board = diagonalRows (transpose board) ++ diagonalRows (transpose (rev
 
     reverseColumns = map reverse
 
-
+instance Show Winner where
+    show (Win color) = "Winner: " ++ show color
+    show Stalemate = "Stalemate"
 
 
     -- STORIES 
