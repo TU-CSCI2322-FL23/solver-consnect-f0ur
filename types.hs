@@ -35,6 +35,7 @@ type Move = Int
 
 -- METH  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+
 -- Make the board (finished?) --
 
 emptyColumn :: Column
@@ -59,8 +60,8 @@ columnFull givenColumn = length givenColumn == 6
 --         (before, after) = splitAt x currentBoard
 
 --splits a list into two parts on the given index 
-splitAt :: Move -> Board -> (a, b)
-splitAt = _
+-- splitAt :: Move -> Board -> (a, b)
+-- splitAt = _
         
 
 --checks if the entire board is full, indicating a draw
@@ -114,26 +115,55 @@ verticalWin board color =
 
 -- Check for diagonal wins on the game board.
 --diagonal win 
+-- Check for diagonal wins on the game board.
+-- Check for diagonal wins on the game board.
+-- Check for diagonal wins on the game board.
+-- Check for diagonal wins on the game board.
+-- Check for diagonal wins on the game board.
+-- Check for diagonal wins on the game board.
 diagonalWin :: Board -> Color -> Bool
 diagonalWin board color =
-    any (checkDiagonal color) (diagonals board)
+    any (\row -> checkConsecutiveDiagonals color row || checkConsecutiveDiagonals color (reverse row)) board
 
--- Check for a diagonal win within a list of colors.
-checkDiagonal :: Color -> [Color] -> Bool
-checkDiagonal color diagonal =
-    any (\group -> length group >= 4 && all (== color) group) (group4 diagonal)
+-- Check for consecutive diagonals of the same color.
+checkConsecutiveDiagonals :: Color -> Column -> Bool
+checkConsecutiveDiagonals _ [] = False
+checkConsecutiveDiagonals color row
+    | length row < 4 = False
+    | consecutive color (take 4 row) = True
+    | otherwise = checkConsecutiveDiagonals color (tail row)
+
+-- Check if a list has consecutive pieces of the same color.
+consecutive :: Color -> [Color] -> Bool
+consecutive _ [] = True
+consecutive _ [_] = True
+consecutive c (x:y:ys)
+    | x == c && y == c = consecutive c (y:ys)
+    | otherwise = False
 
 -- Get all diagonals in a board by transposing the board and finding diagonal rows.
 diagonals :: Board -> [Column]
-diagonals board = diagonalRows (transpose board) ++ diagonalRows (transpose (reverseColumns board))
-  where
-    diagonalRows [] = []
-    diagonalRows ([] : _) = []
-    diagonalRows board' = head board' : diagonalRows (map tail board')
+diagonals board = diagonalsUpRight board ++ diagonalsUpLeft board
 
-    reverseColumns = map reverse
+-- Get all up-right diagonals.
+diagonalsUpRight :: Board -> [Column]
+diagonalsUpRight [] = []
+diagonalsUpRight board' = diagonalRows board' ++ diagonalsUpRight (map tail board')
 
+-- Get all up-left diagonals.
+diagonalsUpLeft :: Board -> [Column]
+diagonalsUpLeft [] = []
+diagonalsUpLeft board' = diagonalRows (reverseColumns board') ++ diagonalsUpLeft (map tail board')
 
+-- Reverse the columns in a board.
+reverseColumns :: Board -> Board
+reverseColumns = map reverse
+
+-- Get all the diagonal rows in a board.
+diagonalRows :: Board -> [Column]
+diagonalRows [] = []
+diagonalRows ([] : _) = []
+diagonalRows board' = head board' : diagonalRows (map tail board')
 
 
     -- STORIES 
@@ -148,7 +178,26 @@ diagonals board = diagonalRows (transpose board) ++ diagonalRows (transpose (rev
 
 -- test board for debugging
 testBoard :: Board
-testBoard = [[Yellow, Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Yellow, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Yellow, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Yellow, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red]]
+testBoard = [
+    [Yellow, Red, Yellow, Red, Yellow, Red],
+    [Red, Yellow, Red, Yellow, Red, Yellow],
+    [Yellow, Red, Yellow, Red, Yellow, Red],
+    [Red, Yellow, Red, Yellow, Red, Yellow],
+    [Yellow, Red, Yellow, Red, Yellow, Red],
+    [Red, Yellow, Red, Yellow, Red, Yellow],
+    [Yellow, Red, Yellow, Red, Yellow, Red]
+    ]
+
+winningBoard :: Board 
+winningBoard = [
+    [Yellow, Yellow, Yellow, Yellow, Red, Red, Red],
+    [Red, Red, Red, Yellow, Red, Yellow, Yellow],
+    [Yellow, Red, Yellow, Red, Yellow, Red, Red],
+    [Red, Yellow, Red, Yellow, Red, Yellow, Yellow],
+    [Yellow, Yellow, Yellow, Yellow, Red, Red, Red],
+    [Red, Red, Red, Red, Yellow, Yellow, Yellow],
+    [Yellow, Red, Yellow, Red, Yellow, Red, Yellow]
+    ]
 
 -- We can't print each column vertically, so we first just get a string of all the elements in a row
 printRow :: [Color] -> String
@@ -156,14 +205,18 @@ printRow [] = ""
 printRow lst = foldr (\x y -> show x ++ " " ++ y) "" lst
 
 -- Prints out a pretty-looking connect four board
-printBoard :: Board -> String
-printBoard [] = ""
-printBoard (x:xs) = printRow x ++ "\n" ++ printBoard xs
+-- printBoard :: Board -> String
+-- printBoard [] = ""
+-- printBoard (x:xs) = printRow x ++ "\n" ++ printBoard xs
 
 -- print all the rows but then transpose them to be
-instance Show Board where
-    show :: Board -> String
-    show board = printBoard (transpose board)
+-- instance Show Board where
+--     show :: Board -> String
+--     show board = printBoard (transpose board)
+
+printBoard :: Board -> String
+printBoard [] = ""
+printBoard board = unlines (map printRow (transpose board))
 
 instance Show Color where
     show :: Color -> String
