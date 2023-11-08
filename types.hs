@@ -3,6 +3,7 @@
 {-# HLINT ignore "Eta reduce" #-}
 
 import Data.List (transpose)
+import Data.List.Extra (intersperse)
 
 --Disk = what you play with 
 --Color = what gets dropped in /Player 
@@ -178,7 +179,7 @@ diagonalRows ([] : _) = []
 diagonalRows board' = head board' : diagonalRows (map tail board')
 
 instance Show Winner where
-    show (Win color) = "Winner: " ++ show color
+    show (Win color) = "Winner: " ++ [showColor color]
     show Stalemate = "Stalemate"
 
 
@@ -219,30 +220,23 @@ winningBoard = [
 validMovesBoard :: Board
 validMovesBoard = [[Yellow, Red, Yellow, Red], [Red, Yellow, Red, Red, Yellow], [Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Red, Yellow], [Yellow, Yellow, Red, Yellow, Red], [Red, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red]]
 
--- We can't print each column vertically, so we first just get a string of all the elements in a row
-printRow :: [Color] -> String
-printRow [] = ""
-printRow lst = foldr (\x y -> show x ++ " " ++ y) "" lst
+-- Prints the board in a human-readable format.
+-- This is the function we should call elsewhere. (fyi)
+printBoard :: Board -> IO ()
+printBoard board = putStrLn (unlines $ map (intersperse '|') $ reverse $ map reverse $ transpose $ padBoard board)
 
--- Prints out a pretty-looking connect four board
--- printBoard :: Board -> String
--- printBoard [] = ""
--- printBoard (x:xs) = printRow x ++ "\n" ++ printBoard xs
+-- Prints a given column of colors in reverse. This is just so that we can rotate the board 90 degrees and everything still lines up.
+colToString :: [Color] -> [Char]
+colToString [] = ""
+colToString lst = foldr (\x y -> showColor x : y) "" $ reverse lst
 
--- print all the rows but then transpose them to be
+padCol :: Column -> [Char]
+padCol col = colToString col ++ replicate (6 - length col) ' '
 
--- instance Show Board where
---     show :: Board -> String
---     show board = printBoard (transpose board)
+padBoard :: Board -> [[Char]]
+padBoard board = map padCol board
 
-printBoard :: Board -> String
-printBoard [] = ""
-printBoard board = unlines (map printRow (transpose board))
-
-instance Show Color where
-    show :: Color -> String
-
-    show color =
-        if color == Yellow
-            then "Y"
-            else "R"
+-- Returns Y for Yellow and R for Red.
+showColor :: Color -> Char
+showColor Yellow = 'Y'
+showColor Red = 'R'
