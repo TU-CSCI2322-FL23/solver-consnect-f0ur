@@ -218,12 +218,19 @@ winningBoard = [
 
 --test board for validMoves
 validMovesBoard :: Board
-validMovesBoard = [[Yellow, Red, Yellow, Red], [Red, Yellow, Red, Red, Yellow], [Red, Yellow, Red, Yellow, Red], [Red, Yellow, Red, Red, Yellow], [Yellow, Yellow, Red, Yellow, Red], [Red, Red, Yellow], [Yellow, Red, Yellow, Red, Yellow, Red]]
+validMovesBoard = [
+                 [Yellow, Red, Yellow, Red], 
+            [Red, Yellow, Red, Red, Yellow], 
+            [Red, Yellow, Red, Yellow, Red], 
+            [Red, Yellow, Red, Red, Yellow], 
+         [Yellow, Yellow, Red, Yellow, Red], 
+                         [Red, Red, Yellow], 
+    [Yellow, Red, Yellow, Red, Yellow, Red]]
 
 -- Prints the board in a human-readable format.
 -- This is the function we should call elsewhere. (fyi)
 printBoard :: Board -> IO ()
-printBoard board = putStrLn (unlines $ map (intersperse '|') $ reverse $ map reverse $ transpose $ padBoard board)
+printBoard board = putStrLn (unlines $ map (intersperse '|') $ reverse $ transpose $ padBoard board)
 
 -- Prints a given column of colors in reverse. This is just so that we can rotate the board 90 degrees and everything still lines up.
 colToString :: [Color] -> [Char]
