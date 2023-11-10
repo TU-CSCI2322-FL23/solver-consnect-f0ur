@@ -115,6 +115,11 @@ group4 column
     | length column < 4 = []  -- If there are less than 4 colors, there can't be a group of 4.
     | otherwise = take 4 column : group4 (tail column)
 
+instance Show Color where
+    show Yellow = "Y"
+    show Red = "R"
+    
+
 -- Check for horizontal wins on the game board.
 horizontalWin :: Board -> Color -> Bool
 horizontalWin board color =
