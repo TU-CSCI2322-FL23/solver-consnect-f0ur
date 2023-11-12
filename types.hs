@@ -5,39 +5,10 @@
 import Data.List (transpose)
 import Data.List.Extra (intersperse)
 
---Disk = what you play with 
---Color = what gets dropped in /Player 
---tile = indiviual holes in the board
---board 7 columns 6 rows, 42 holes in totßal  
+import Types
 
 
---Column number (inputed by player when making move)
---Only storing colors in holes; not storing empty holes
--- 7 Columns by default
--- Head of column is highest color in stack
---     - when we drop a new color, it gets appended to the front of the list
---Don't need to index bc we can use  splitat
-type Column = [Color]
-
---Possibilities of states for the holes on the board
--- We don't derive Show because we have a custom one!
-data Color = Yellow | Red deriving (Eq)
-
-data Winner = Win Color | Stalemate deriving (Eq) -- define win
-
---List of the states for the holes for the whole board
-type Board = [Column]
-
---Board in game and the color of the players turn
-type Game = (Board, Color)
-
--- 0 to 6 (makes it easier to code; we can change it to 1 to 7 later)
-type Move = Int
-
--- METH  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
--- Make the board (finished?) --
+-- Make the board -------------------------------------------------------------------------------------------------
 
 emptyColumn :: Column
 emptyColumn = []
@@ -45,9 +16,8 @@ emptyColumn = []
 emptyBoard :: Board
 emptyBoard = replicate 7 emptyColumn
 
--- Making the game --
+-- Making the game -----------------------------------------------------------------------------------------------
 
---tested: works
 --checks if the column is full
 columnFull :: Column -> Bool
 columnFull givenColumn = length givenColumn == 6
@@ -62,34 +32,19 @@ makeMove (currentBoard, moveColor) x =
         in
             (newBoard, swapColor moveColor)
 
-
-
--- makeMove :: Game -> Move -> Game
--- makeMove (currentBoard, moveColor) x = moveColor : emptyColumn  
---     -- moveColumn is the column
---     where 
---         (before, after) = splitAt x currentBoard
-
---splits a list into two parts on the given index 
--- splitAt :: Move -> Board -> (a, b)
--- splitAt = _
-
-
+-- takes in color and returns other color
 swapColor :: Color -> Color
 swapColor color = if color == Red then Yellow else Red
 
 
 --checks if the entire board is full, indicating a draw
---tested: works
 boardFull :: Board -> Bool
 boardFull board = all columnFull board
 
---tested: works 
-validMoves :: Game -> [Move]
 --creates a list of moves by filtering out the non-valid moves for each of the columns in the board 
+validMoves :: Game -> [Move]
 validMoves (board, turn) = filter (isValidMove (board, turn)) [0..length board - 1]
 
---tested: works
 --helper function for validmoves
 isValidMove :: Game -> Move -> Bool
 isValidMove (board, turn) column
@@ -98,9 +53,8 @@ isValidMove (board, turn) column
     | otherwise = True
 
 
---sees if anyone in the game has won. CAG  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
+-- Win Methods CAG  --------------------------------------------------------------------------------------------
+    
 -- Determines the winner of the game based on the current game state.
 gameWin :: Game -> Winner
 gameWin (board, color) =
@@ -186,16 +140,6 @@ diagonalRows board' = head board' : diagonalRows (map tail board')
 instance Show Winner where
     show (Win color) = "Winner: " ++ [showColor color]
     show Stalemate = "Stalemate"
-
-
-    -- STORIES 
-    -- 1. Define data types or type aliases for a player, game state, move, and winner.
-
-    -- 2. Be able to determine who has won the game state, if anyone.
-
-    -- 3. Be able to compute the result of making a legal move in a game state.
-
-    -- 5. (If time) Be able to pretty-print a game into a string.
 
 
 -- test board for debugging
