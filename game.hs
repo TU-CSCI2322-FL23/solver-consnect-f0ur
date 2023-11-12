@@ -72,6 +72,18 @@ gameWin (board, color) =
         then Win color
         else Stalemate
 
+--checks both colors for testing purposes
+unsafeGameWin :: Game -> Winner
+unsafeGameWin (board, color) =
+    let 
+        otherCol = swapColor color
+    in
+        if horizontalWin board color || verticalWin board color || diagonalWin board color
+            then Win color
+        else if horizontalWin board otherCol || verticalWin board otherCol || diagonalWin board otherCol
+            then Win otherCol
+        else Stalemate
+
 -- Group the colors in a column into groups of 4 to check for consecutive colors.
 group4 :: Column -> [Column]
 group4 [] = []
