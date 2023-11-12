@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 {-# HLINT ignore "Eta reduce" #-}
+{-# HLINT ignore "Use <=" #-}
 
 import Data.List (transpose)
 import Data.List.Extra (intersperse)
@@ -22,15 +23,24 @@ emptyBoard = replicate 7 emptyColumn
 columnFull :: Column -> Bool
 columnFull givenColumn = length givenColumn == 6
 
+isMoveOutofBounds :: Move -> Bool
+isMoveOutofBounds x = x < 0 || x > 6
+
+
 
 -- may need to add check for valid move
-makeMove :: Game -> Move -> Game
+makeMove :: Game -> Move -> Maybe Game
 makeMove (currentBoard, moveColor) x =
+    if isMoveOutofBounds x 
+        then Nothing
+    else
         let
             (before, inclusiveAfter) = splitAt x currentBoard
-            newBoard = before ++ [moveColor : head inclusiveAfter] ++ tail inclusiveAfter
         in
-            (newBoard, swapColor moveColor)
+            if columnFull (head inclusiveAfter)
+                then Nothing
+            else 
+                Just (before ++ [moveColor : head inclusiveAfter] ++ tail inclusiveAfter, swapColor moveColor)
 
 -- takes in color and returns other color
 swapColor :: Color -> Color
@@ -54,7 +64,7 @@ isValidMove (board, turn) column
 
 
 -- Win Methods CAG  --------------------------------------------------------------------------------------------
-    
+
 -- Determines the winner of the game based on the current game state.
 gameWin :: Game -> Winner
 gameWin (board, color) =
@@ -68,11 +78,6 @@ group4 [] = []
 group4 column
     | length column < 4 = []  -- If there are less than 4 colors, there can't be a group of 4.
     | otherwise = take 4 column : group4 (tail column)
-
-instance Show Color where
-    show Yellow = "Y"
-    show Red = "R"
-    
 
 -- Check for horizontal wins on the game board.
 horizontalWin :: Board -> Color -> Bool
@@ -137,10 +142,6 @@ diagonalRows [] = []
 diagonalRows ([] : _) = []
 diagonalRows board' = head board' : diagonalRows (map tail board')
 
-instance Show Winner where
-    show (Win color) = "Winner: " ++ [showColor color]
-    show Stalemate = "Stalemate"
-
 
 -- test board for debugging
 testBoard :: Board
@@ -168,12 +169,12 @@ winningBoard = [
 --test board for validMoves
 validMovesBoard :: Board
 validMovesBoard = [
-                 [Yellow, Red, Yellow, Red], 
-            [Red, Yellow, Red, Red, Yellow], 
-            [Red, Yellow, Red, Yellow, Red], 
-            [Red, Yellow, Red, Red, Yellow], 
-         [Yellow, Yellow, Red, Yellow, Red], 
-                         [Red, Red, Yellow], 
+                 [Yellow, Red, Yellow, Red],
+            [Red, Yellow, Red, Red, Yellow],
+            [Red, Yellow, Red, Yellow, Red],
+            [Red, Yellow, Red, Red, Yellow],
+         [Yellow, Yellow, Red, Yellow, Red],
+                         [Red, Red, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red]]
 
 -- Prints the board in a human-readable format.
