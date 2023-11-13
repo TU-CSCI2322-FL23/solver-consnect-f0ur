@@ -51,9 +51,10 @@ swapColor color = if color == Red then Yellow else Red
 boardFull :: Board -> Bool
 boardFull board = all columnFull board
 
---creates a list of moves by filtering out the non-valid moves for each of the columns in the board 
+--iterates over all the columns and filters out all the valid moves  
 validMoves :: Game -> [Move]
-validMoves (board, turn) = filter (isValidMove (board, turn)) [0..length board - 1]
+validMoves (board, turn) = --filter (isValidMove (board, turn)) [0..length board - 1]
+    [column | (column, _) <- zip [0..] board, isValidMove (board, turn) column]
 
 --helper function for validmoves
 isValidMove :: Game -> Move -> Bool
