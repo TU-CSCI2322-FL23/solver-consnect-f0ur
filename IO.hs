@@ -16,7 +16,11 @@ outputBoard board = putStrLn $ printBoard board
 
 -- 
 -- -- Output formnat:
--- -- 
+-- -- R
+-- -- RRRRYRR
+-- -- RYRYRYR
+-- -- RYRYRYR
+-- -- RYRYRYR
 -- 
 
 readGame :: String -> Game
