@@ -210,3 +210,8 @@ padBoard board = map padCol board
 showColor :: Color -> Char
 showColor Yellow = 'Y'
 showColor Red = 'R'
+
+showWinner :: Winner -> String
+showWinner (Win Yellow) = "Yellow"
+showWinner (Win Red) = "Red"
+showWinner Stalemate = "Stalemate"
