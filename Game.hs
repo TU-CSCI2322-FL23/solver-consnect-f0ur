@@ -5,8 +5,9 @@
 
 module Game where
 
-import Data.List (transpose)
+import Data.List (transpose, isInfixOf)
 import Data.List.Extra (intersperse)
+import Data.Maybe ()
 
 -- Disk = what you play with
 -- Color = what gets dropped in /Player
@@ -121,23 +122,32 @@ group4 column
     | length column < 4 = []  -- If there are less than 4 colors, there can't be a group of 4.
     | otherwise = take 4 column : group4 (tail column)
 
--- Check for horizontal wins on the game board.
+
+-- Gets list of colors in all rows of board and seeing if any of them has four of given color in a row
 horizontalWin :: Board -> Color -> Bool
-horizontalWin board color =
-    any (checkHorizontal color) board
+horizontalWin board Red = or [ [Just Red, Just Red, Just Red, Just Red] `isInfixOf` x | x <-horizontalWinHelper board]
+horizontalWin board Yellow = or [ [Just Yellow, Just Yellow, Just Yellow, Just Yellow] `isInfixOf` x | x <- horizontalWinHelper board]
 
--- Check for a horizontal win within a single column.
-checkHorizontal :: Color -> Column -> Bool
-checkHorizontal color column =
-    any (\group -> length group >= 4 && all (== color) group) (group4 column)
+-- Gets list of colors in given row for full board
+horizontalWinHelper :: Board -> [[Maybe Color]]
+horizontalWinHelper board = [getRowFromBoard board x | x <- [0..5]]
 
--- Check for vertical wins on the transposed game board (columns become rows).
+-- Gets list of colors in given row
+getRowFromBoard :: Board -> Int -> [Maybe Color]
+getRowFromBoard board n = [ getRowFromColumn (reverse x) n | x <- board]
 
---vertical win 
+-- Returns Color at the index of given column (returns nothing if it isn't present)
+getRowFromColumn :: Column -> Int -> Maybe Color
+getRowFromColumn col n = 
+    case drop n col of
+        [] -> Nothing
+        (x:xs) -> Just x
+
+
+-- Checks if there are four of a row in each column 
 verticalWin :: Board -> Color -> Bool
-verticalWin board color =
-    horizontalWin (transpose board) color
-
+verticalWin board Red = or [ [Red, Red, Red, Red] `isInfixOf` x | x <- board]
+verticalWin board Yellow = or [ [Yellow, Yellow, Yellow, Yellow] `isInfixOf` x | x <- board]
 
 -- Check for diagonal wins on the game board.
 diagonalWin :: Board -> Color -> Bool
