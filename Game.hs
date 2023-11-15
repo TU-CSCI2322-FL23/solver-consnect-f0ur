@@ -195,33 +195,8 @@ reverseColumns = map reverse
 
 -- Determining optimal move ------------------------------------------------------------------------------------------------------------------------
 
-{-
-bestPlay :: Dictionary -> Hand -> Play
-bestPlay dict hand =
-    let words = validMoves dict hand
-        paths = [ x:(bestPlay (bestPlayHelper words  x) (updateHand --(makeMove)-- hand x)) | x <- words]
-        word = snd (maximum [ (scorePlay x, head x) | x <- paths])
-    in if length words == 0
-           then []
-        else word : bestPlay words (updateHand hand word)
-
-bestPlayHelper :: [Move] -> Move -> Dictionary
-bestPlayHelper words word = [ x | x <- words, x >= word] 
-
-
-
-bestPlay:: Dictionary -> Hand -> Play 
-bestPlay dictionary [] = []
-bestPlay dictionary hand = 
-    let anothervalidFuck = validMoves dictionary hand
-        tail = [x: bestPlay (dictionary) (updateHand hand x) | x <- anothervalidFuck]
-    in if anothervalidFuck == [] then [] else snd(maximum [(scorePlay y, y) | y <- tail])
-    
--}
-----------------------------------
-
+-- Takes a game (close to being over) and returns if the current color can force a win or a stalemate
 whoWillWin :: Game -> Winner
---whoWillWin [_,color] = [Winner]
 whoWillWin game@(board, color) = 
     case gameWin game of 
         Just outcome -> outcome
@@ -234,10 +209,6 @@ whoWillWin game@(board, color) =
                else if Stalemate `elem` winners
                 then Stalemate
                 else Win $ swapColor color
-
--- *handled* 0 turns (base case)
--- deals with draws
--- go for more than one step ahead
 
 -- test board for debugging
 testBoard :: Board
