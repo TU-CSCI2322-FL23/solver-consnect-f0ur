@@ -27,7 +27,15 @@ testGame :: Game
 testGame = (testBoard, Red)
 
 readGame :: String -> Game
-readGame = undefined
+readGame (player:board) =
+    let
+        readColor 'R' = Red
+        readColor 'Y' = Yellow
+        readColor _ = error "Invalid color"
+
+    in
+        (map (map readColor) (lines board), readColor player)
+
 
 showGame :: Game -> String
 showGame game =
@@ -37,4 +45,4 @@ showGame game =
         showRow row = [showColor color | color <- row]
     in
         -- append the player, then each row of the board
-        showColor player : concatMap showRow board
+        showColor player : unlines (map showRow board)
