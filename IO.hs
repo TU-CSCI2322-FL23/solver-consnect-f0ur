@@ -27,4 +27,11 @@ readGame :: String -> Game
 readGame = undefined
 
 showGame :: Game -> String
-showGame = undefined
+showGame (board, color) =
+    let
+        colNumbers = " 1 2 3 4 5 6 7"
+        separator = "-----------------"
+        boardText = printBoard board
+        turn = "Current turn: " ++ [showColor color]
+    in
+        unlines [colNumbers, separator, boardText, separator, turn]
