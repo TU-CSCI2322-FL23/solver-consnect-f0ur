@@ -7,7 +7,8 @@ module Game where
 
 import Data.List (transpose, isInfixOf)
 import Data.List.Extra (intersperse)
-import Data.Maybe ()
+import Data.Maybe (fromMaybe, catMaybes)
+
 
 -- Types -------------------------------------------------------------------------------------------------
 
@@ -61,7 +62,7 @@ isMoveOutofBounds x = x < 0 || x > 6
 -- may need to add check for valid move
 makeMove :: Game -> Move -> Maybe Game
 makeMove (currentBoard, moveColor) x =
-    if isMoveOutofBounds x 
+    if isMoveOutofBounds x
         then Nothing
     else
         let
@@ -69,14 +70,13 @@ makeMove (currentBoard, moveColor) x =
         in
             if columnFull (head inclusiveAfter)
                 then Nothing
-            else 
+            else
                 Just (before ++ [moveColor : head inclusiveAfter] ++ tail inclusiveAfter, swapColor moveColor)
 
 -- takes in color and returns other color
 swapColor :: Color -> Color
-swapColor color
-    | color == Red    = Yellow
-    | color == Yellow = Red
+swapColor color = if color == Red then Yellow else Red
+
 
 --checks if the entire board is full, indicating a draw
 boardFull :: Board -> Bool
@@ -98,16 +98,16 @@ isValidMove (board, turn) column
 -- Win Methods CAG  --------------------------------------------------------------------------------------------
 
 -- Determines the winner of the game based on the current game state.
-gameWin :: Game -> Winner
-gameWin (board, color) =
-    if horizontalWin board color || verticalWin board color || diagonalWin board color
-        then Win color
-        else Stalemate
+gameWin :: Game -> Maybe Winner
+gameWin (board, color)
+  | horizontalWin board color || verticalWin board color || diagonalWin board color = Just $ Win color
+  | boardFull board = Just Stalemate
+  | otherwise = Nothing
 
 --checks both colors for testing purposes
 unsafeGameWin :: Game -> Winner
 unsafeGameWin (board, color) =
-    let 
+    let
         otherCol = swapColor color
     in
         if horizontalWin board color || verticalWin board color || diagonalWin board color
@@ -131,7 +131,7 @@ getRowFromBoard board n = [ getRowFromColumn (reverse x) n | x <- board]
 
 -- Returns Color at the index of given column (returns nothing if it isn't present)
 getRowFromColumn :: Column -> Int -> Maybe Color
-getRowFromColumn col n = 
+getRowFromColumn col n =
     case drop n col of
         [] -> Nothing
         (x:xs) -> Just x
@@ -148,21 +148,21 @@ diagonalWin board Yellow = or [ [Just Yellow, Just Yellow, Just Yellow, Just Yel
 
 -- Returns list of all diagonals (of length 4) in board
 getDiagonalsFromBoard :: Board -> [[Maybe Color]]
-getDiagonalsFromBoard board = 
-    let 
+getDiagonalsFromBoard board =
+    let
         [one,two,three,four] = groupsOfFourColumns board
-    in  
+    in
         groupsOfFourColumnsDiagonals one ++ groupsOfFourColumnsDiagonals two ++ groupsOfFourColumnsDiagonals three ++ groupsOfFourColumnsDiagonals four
 
 --Returns all groups of four columns (with columns in reverse) (assumes 7 columns)
 groupsOfFourColumns :: Board -> [[Column]]
 groupsOfFourColumns [first,second,third,fourth,fifth,sixth,seventh] =
-    let 
-        one   = [reverse first,reverse second,reverse third,reverse fourth] 
+    let
+        one   = [reverse first,reverse second,reverse third,reverse fourth]
         two   = [reverse second,reverse third,reverse fourth,reverse fifth]
         three = [reverse third,reverse fourth,reverse fifth,reverse sixth]
         four  = [reverse fourth,reverse fifth,reverse sixth,reverse seventh]
-    in 
+    in
         [one,two,three,four]
 
 -- Returns all diagonals in group of four columns
@@ -171,27 +171,73 @@ groupsOfFourColumnsDiagonals columns = leftDownDiagonals columns ++ rightDownDia
 
 -- Takes list of four columns and finds all the diagonals that start with the left side down (max of 3 output)
 leftDownDiagonals :: [Column] -> [[Maybe Color]]
-leftDownDiagonals [first, second, third, fourth] = 
-    let 
+leftDownDiagonals [first, second, third, fourth] =
+    let
         bottom = [getRowFromColumn first 0, getRowFromColumn second 1, getRowFromColumn third 2, getRowFromColumn fourth 3]
         middle = [getRowFromColumn first 1, getRowFromColumn second 2, getRowFromColumn third 3, getRowFromColumn fourth 4]
         top    = [getRowFromColumn first 2, getRowFromColumn second 3, getRowFromColumn third 4, getRowFromColumn fourth 5]
-    in 
+    in
         [bottom, middle, top]
 
 -- Takes list of four columns and finds all the diagonals that start with the right side down (max of 3 output)
 rightDownDiagonals :: [Column] -> [[Maybe Color]]
-rightDownDiagonals [first, second, third, fourth] = 
-    let 
+rightDownDiagonals [first, second, third, fourth] =
+    let
         bottom = [getRowFromColumn first 3, getRowFromColumn second 2, getRowFromColumn third 1, getRowFromColumn fourth 0]
         middle = [getRowFromColumn first 4, getRowFromColumn second 3, getRowFromColumn third 2, getRowFromColumn fourth 1]
         top    = [getRowFromColumn first 5, getRowFromColumn second 4, getRowFromColumn third 3, getRowFromColumn fourth 2]
-    in 
+    in
         [bottom, middle, top]
 
 -- Reverse the columns in a board.
 reverseColumns :: Board -> Board
 reverseColumns = map reverse
+
+-- Determining optimal move ------------------------------------------------------------------------------------------------------------------------
+
+{-
+bestPlay :: Dictionary -> Hand -> Play
+bestPlay dict hand =
+    let words = validMoves dict hand
+        paths = [ x:(bestPlay (bestPlayHelper words  x) (updateHand --(makeMove)-- hand x)) | x <- words]
+        word = snd (maximum [ (scorePlay x, head x) | x <- paths])
+    in if length words == 0
+           then []
+        else word : bestPlay words (updateHand hand word)
+
+bestPlayHelper :: [Move] -> Move -> Dictionary
+bestPlayHelper words word = [ x | x <- words, x >= word] 
+
+
+
+bestPlay:: Dictionary -> Hand -> Play 
+bestPlay dictionary [] = []
+bestPlay dictionary hand = 
+    let anothervalidFuck = validMoves dictionary hand
+        tail = [x: bestPlay (dictionary) (updateHand hand x) | x <- anothervalidFuck]
+    in if anothervalidFuck == [] then [] else snd(maximum [(scorePlay y, y) | y <- tail])
+    
+-}
+----------------------------------
+
+whoWillWin :: Game -> Winner
+--whoWillWin [_,color] = [Winner]
+whoWillWin game@(board, color) = 
+    case gameWin game of 
+        Just outcome -> outcome
+        Nothing -> 
+            let moves = validMoves game
+                childGames = catMaybes [ makeMove game x | x <- moves]
+                winners = map whoWillWin childGames
+            in if Win color `elem` winners 
+               then Win color
+               else if Stalemate `elem` winners
+                then Stalemate
+                else Win $ swapColor color
+
+-- *handled* 0 turns (base case)
+-- deals with draws
+-- go for more than one step ahead
 
 -- test board for debugging
 testBoard :: Board
