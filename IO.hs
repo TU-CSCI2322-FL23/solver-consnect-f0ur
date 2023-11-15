@@ -23,8 +23,18 @@ outputBoard board = putStrLn $ printBoard board
 -- -- RYRYRYR
 -- 
 
+testGame :: Game
+testGame = (testBoard, Red)
+
 readGame :: String -> Game
 readGame = undefined
 
 showGame :: Game -> String
-showGame = undefined
+showGame game =
+    let
+        board = fst game
+        player = snd game
+        showRow row = [showColor color | color <- row]
+    in
+        -- append the player, then each row of the board
+        showColor player : concatMap showRow board
