@@ -5,8 +5,12 @@
 
 module Game where
 
-import Data.List (transpose)
+import Data.List (transpose, isInfixOf)
 import Data.List.Extra (intersperse)
+import Data.Maybe (fromMaybe, catMaybes)
+
+
+-- Types -------------------------------------------------------------------------------------------------
 
 -- Disk = what you play with
 -- Color = what gets dropped in /Player
@@ -55,12 +59,10 @@ columnFull givenColumn = length givenColumn == 6
 isMoveOutofBounds :: Move -> Bool
 isMoveOutofBounds x = x < 0 || x > 6
 
-
-
 -- may need to add check for valid move
 makeMove :: Game -> Move -> Maybe Game
 makeMove (currentBoard, moveColor) x =
-    if isMoveOutofBounds x 
+    if isMoveOutofBounds x
         then Nothing
     else
         let
@@ -68,7 +70,7 @@ makeMove (currentBoard, moveColor) x =
         in
             if columnFull (head inclusiveAfter)
                 then Nothing
-            else 
+            else
                 Just (before ++ [moveColor : head inclusiveAfter] ++ tail inclusiveAfter, swapColor moveColor)
 
 -- takes in color and returns other color
@@ -96,16 +98,16 @@ isValidMove (board, turn) column
 -- Win Methods CAG  --------------------------------------------------------------------------------------------
 
 -- Determines the winner of the game based on the current game state.
-gameWin :: Game -> Winner
-gameWin (board, color) =
-    if horizontalWin board color || verticalWin board color || diagonalWin board color
-        then Win color
-        else Stalemate
+gameWin :: Game -> Maybe Winner
+gameWin (board, color)
+  | horizontalWin board color || verticalWin board color || diagonalWin board color = Just $ Win color
+  | boardFull board = Just Stalemate
+  | otherwise = Nothing
 
 --checks both colors for testing purposes
 unsafeGameWin :: Game -> Winner
 unsafeGameWin (board, color) =
-    let 
+    let
         otherCol = swapColor color
     in
         if horizontalWin board color || verticalWin board color || diagonalWin board color
@@ -114,76 +116,99 @@ unsafeGameWin (board, color) =
             then Win otherCol
         else Stalemate
 
--- Group the colors in a column into groups of 4 to check for consecutive colors.
-group4 :: Column -> [Column]
-group4 [] = []
-group4 column
-    | length column < 4 = []  -- If there are less than 4 colors, there can't be a group of 4.
-    | otherwise = take 4 column : group4 (tail column)
-
--- Check for horizontal wins on the game board.
+-- Gets list of colors in all rows of board and checks if any of them has four of given color in a row
 horizontalWin :: Board -> Color -> Bool
-horizontalWin board color =
-    any (checkHorizontal color) board
+horizontalWin board Red = or [ [Just Red, Just Red, Just Red, Just Red] `isInfixOf` x | x <-horizontalWinHelper board]
+horizontalWin board Yellow = or [ [Just Yellow, Just Yellow, Just Yellow, Just Yellow] `isInfixOf` x | x <- horizontalWinHelper board]
 
--- Check for a horizontal win within a single column.
-checkHorizontal :: Color -> Column -> Bool
-checkHorizontal color column =
-    any (\group -> length group >= 4 && all (== color) group) (group4 column)
+-- Gets list of colors in each row for full board
+horizontalWinHelper :: Board -> [[Maybe Color]]
+horizontalWinHelper board = [getRowFromBoard board x | x <- [0..5]]
 
--- Check for vertical wins on the transposed game board (columns become rows).
+-- Gets list of colors in given row
+getRowFromBoard :: Board -> Int -> [Maybe Color]
+getRowFromBoard board n = [ getRowFromColumn (reverse x) n | x <- board]
 
---vertical win 
+-- Returns Color at the index of given column (returns nothing if it isn't present)
+getRowFromColumn :: Column -> Int -> Maybe Color
+getRowFromColumn col n =
+    case drop n col of
+        [] -> Nothing
+        (x:xs) -> Just x
+
+-- Checks if there are four of a row in each column 
 verticalWin :: Board -> Color -> Bool
-verticalWin board color =
-    horizontalWin (transpose board) color
+verticalWin board Red = or [ [Red, Red, Red, Red] `isInfixOf` x | x <- board]
+verticalWin board Yellow = or [ [Yellow, Yellow, Yellow, Yellow] `isInfixOf` x | x <- board]
 
-
--- Check for diagonal wins on the game board.
+-- Gets list of all diagonals in board and checks if any of them contain four of given color
 diagonalWin :: Board -> Color -> Bool
-diagonalWin board color =
-    any (\row -> checkConsecutiveDiagonals color row || checkConsecutiveDiagonals color (reverse row)) board
+diagonalWin board Red = or [ [Just Red, Just Red, Just Red, Just Red] `isInfixOf` x | x <-getDiagonalsFromBoard board]
+diagonalWin board Yellow = or [ [Just Yellow, Just Yellow, Just Yellow, Just Yellow] `isInfixOf` x | x <- getDiagonalsFromBoard board]
 
--- Check for consecutive diagonals of the same color.
-checkConsecutiveDiagonals :: Color -> Column -> Bool
-checkConsecutiveDiagonals _ [] = False
-checkConsecutiveDiagonals color row
-    | length row < 4 = False
-    | consecutive color (take 4 row) = True
-    | otherwise = checkConsecutiveDiagonals color (tail row)
+-- Returns list of all diagonals (of length 4) in board
+getDiagonalsFromBoard :: Board -> [[Maybe Color]]
+getDiagonalsFromBoard board =
+    let
+        [one,two,three,four] = groupsOfFourColumns board
+    in
+        groupsOfFourColumnsDiagonals one ++ groupsOfFourColumnsDiagonals two ++ groupsOfFourColumnsDiagonals three ++ groupsOfFourColumnsDiagonals four
 
--- Check if a list has consecutive pieces of the same color.
-consecutive :: Color -> [Color] -> Bool
-consecutive _ [] = True
-consecutive _ [_] = True
-consecutive c (x:y:ys)
-    | x == c && y == c = consecutive c (y:ys)
-    | otherwise = False
+--Returns all groups of four columns (with columns in reverse) (assumes 7 columns)
+groupsOfFourColumns :: Board -> [[Column]]
+groupsOfFourColumns [first,second,third,fourth,fifth,sixth,seventh] =
+    let
+        one   = [reverse first,reverse second,reverse third,reverse fourth]
+        two   = [reverse second,reverse third,reverse fourth,reverse fifth]
+        three = [reverse third,reverse fourth,reverse fifth,reverse sixth]
+        four  = [reverse fourth,reverse fifth,reverse sixth,reverse seventh]
+    in
+        [one,two,three,four]
 
--- Get all diagonals in a board by transposing the board and finding diagonal rows.
-diagonals :: Board -> [Column]
-diagonals board = diagonalsUpRight board ++ diagonalsUpLeft board
+-- Returns all diagonals in group of four columns
+groupsOfFourColumnsDiagonals :: [Column] -> [[Maybe Color]]
+groupsOfFourColumnsDiagonals columns = leftDownDiagonals columns ++ rightDownDiagonals columns
 
--- Get all up-right diagonals.
-diagonalsUpRight :: Board -> [Column]
-diagonalsUpRight [] = []
-diagonalsUpRight board' = diagonalRows board' ++ diagonalsUpRight (map tail board')
+-- Takes list of four columns and finds all the diagonals that start with the left side down (max of 3 output)
+leftDownDiagonals :: [Column] -> [[Maybe Color]]
+leftDownDiagonals [first, second, third, fourth] =
+    let
+        bottom = [getRowFromColumn first 0, getRowFromColumn second 1, getRowFromColumn third 2, getRowFromColumn fourth 3]
+        middle = [getRowFromColumn first 1, getRowFromColumn second 2, getRowFromColumn third 3, getRowFromColumn fourth 4]
+        top    = [getRowFromColumn first 2, getRowFromColumn second 3, getRowFromColumn third 4, getRowFromColumn fourth 5]
+    in
+        [bottom, middle, top]
 
--- Get all up-left diagonals.
-diagonalsUpLeft :: Board -> [Column]
-diagonalsUpLeft [] = []
-diagonalsUpLeft board' = diagonalRows (reverseColumns board') ++ diagonalsUpLeft (map tail board')
+-- Takes list of four columns and finds all the diagonals that start with the right side down (max of 3 output)
+rightDownDiagonals :: [Column] -> [[Maybe Color]]
+rightDownDiagonals [first, second, third, fourth] =
+    let
+        bottom = [getRowFromColumn first 3, getRowFromColumn second 2, getRowFromColumn third 1, getRowFromColumn fourth 0]
+        middle = [getRowFromColumn first 4, getRowFromColumn second 3, getRowFromColumn third 2, getRowFromColumn fourth 1]
+        top    = [getRowFromColumn first 5, getRowFromColumn second 4, getRowFromColumn third 3, getRowFromColumn fourth 2]
+    in
+        [bottom, middle, top]
 
 -- Reverse the columns in a board.
 reverseColumns :: Board -> Board
 reverseColumns = map reverse
 
--- Get all the diagonal rows in a board.
-diagonalRows :: Board -> [Column]
-diagonalRows [] = []
-diagonalRows ([] : _) = []
-diagonalRows board' = head board' : diagonalRows (map tail board')
+-- Determining optimal move ------------------------------------------------------------------------------------------------------------------------
 
+-- Takes a game (close to being over) and returns if the current color can force a win or a stalemate
+whoWillWin :: Game -> Winner
+whoWillWin game@(board, color) = 
+    case gameWin game of 
+        Just outcome -> outcome
+        Nothing -> 
+            let moves = validMoves game
+                childGames = catMaybes [ makeMove game x | x <- moves]
+                winners = map whoWillWin childGames
+            in if Win color `elem` winners 
+               then Win color
+               else if Stalemate `elem` winners
+                then Stalemate
+                else Win $ swapColor color
 
 -- test board for debugging
 testBoard :: Board
