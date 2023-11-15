@@ -23,15 +23,18 @@ outputBoard board = putStrLn $ printBoard board
 -- -- RYRYRYR
 -- 
 
+testGame :: Game
+testGame = (testBoard, Red)
+
 readGame :: String -> Game
 readGame = undefined
 
 showGame :: Game -> String
-showGame (board, color) =
+showGame game =
     let
-        colNumbers = " 1 2 3 4 5 6 7"
-        separator = "-----------------"
-        boardText = printBoard board
-        turn = "Current turn: " ++ [showColor color]
+        board = fst game
+        player = snd game
+        showRow row = [showColor color | color <- row]
     in
-        unlines [colNumbers, separator, boardText, separator, turn]
+        -- append the player, then each row of the board
+        showColor player : concatMap showRow board
