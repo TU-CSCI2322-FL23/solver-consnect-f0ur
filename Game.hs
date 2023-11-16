@@ -210,6 +210,17 @@ whoWillWin game@(board, color) =
                 then Stalemate
                 else Win $ swapColor color
 
+bestMove :: Game -> Move
+bestMove game@(board, color) = 
+    let moves = validMoves game
+        childGames = catMaybes [ makeMove game x | x <- moves]
+        winners = map bestMove childGames
+    in if Win color `elem` winners 
+       then Win color
+       else if Stalemate `elem` winners
+        then Stalemate
+        else Win $ swapColor color
+
 -- test board for debugging
 testBoard :: Board
 testBoard = [
