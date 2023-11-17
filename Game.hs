@@ -108,16 +108,19 @@ gameWin (board, color)
   | otherwise = Nothing
 
 --checks both colors for testing purposes
-unsafeGameWin :: Game -> Winner
+unsafeGameWin :: Game -> Maybe Winner
 unsafeGameWin (board, color) =
     let
         otherCol = swapColor color
     in
         if horizontalWin board color || verticalWin board color || diagonalWin board color
-            then Win color
+            then Just $ Win color
         else if horizontalWin board otherCol || verticalWin board otherCol || diagonalWin board otherCol
-            then Win otherCol
-        else Stalemate
+            then Just $ Win otherCol
+        else if boardFull board
+            then Just Stalemate
+        else 
+            Nothing
 
 -- Gets list of colors in all rows of board and checks if any of them has four of given color in a row
 horizontalWin :: Board -> Color -> Bool
