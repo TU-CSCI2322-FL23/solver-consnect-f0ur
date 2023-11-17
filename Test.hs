@@ -45,23 +45,23 @@ unoAwayGame =
         board = [ [] 
                 , []
                 , []
-                , []
+                , [Yellow, Red, Yellow, Red]
                 , [Red, Red, Red, Yellow, Yellow, Red]  
                 , [Red, Yellow, Yellow, Red, Yellow, Red]
                 , [Yellow, Red, Red, Red, Yellow, Yellow]
                 ]
     in (board, player)
--- Test case: two move from the end
+-- Test case: two moves from the end
 dosAwayGame :: Game
 dosAwayGame =
     let (_, player) = emptyGame
         board = [  [] 
                 , []
                 , []
-                , []
-                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  
-                , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
-                , [Yellow, Red, Red, Red, Yellow, Yellow, Red]
+                , [Yellow, Red]
+                , [Yellow, Red   , Red   , Yellow]  
+                , [Red   , Yellow, Yellow, Red   , Yellow, Red   , Yellow]
+                , [Red   , Red    , Red   , Red   , Yellow, Yellow, Red]
                 ]
         in (board, player)
 
@@ -238,29 +238,30 @@ runTest (label, test) = do
 -- Then, for example, in your list of tests:
 allTests :: [(String, Test)]
 allTests =
-     [ ("Empty Board Test", testValidEmpty)
-    , ("Full Board Test", testValidFull)
-    , ("One Move from End Test", testValidUnoAway)
+     [ ("\nEmpty Board Test -- Test Valid Moves", testValidEmpty)
+    , ("\nFull Board Test", testValidFull)
+    , ("\nOne Move from End Test", testValidUnoAway)
     , ("Two Moves from End Test", testValidDosAway)
     , ("Four Moves from End Test", testValidCuatroAway)
 
-    , ("Full Board Test", testWinnerfin)
+    , ("\nFull Board Test -- Test Winner", testWinnerfin)
     , ("One Move from End Test", testWinnerOneFromEnd)
     , ("Two Moves from End Test", testWinnerTwoFromEnd)
     , ("Four Moves from End Test", testWinnerFourFromEnd)
 
-    , ("Full Board Test", testWhoWillWinFin)
+    , ("\nFull Board Test -- WhoWillWin", testWhoWillWinFin)
     , ("One Move from End Test", testWhoWillWinOneFromEnd)
     , ("Two Moves from End Test", testWhoWillWinTwoFromEnd)
     , ("Four Moves from End Test", testWhoWillWinFourFromEnd)
 
-    , ("Full Board Test", testBestMoveFinished)
+    , ("\nFull Board Test -- Best move", testBestMoveFinished)
     , ("One Move from End Test", testBestMoveOneFromEnd)
     , ("Two Moves from End Test", testBestMoveTwoFromEnd)
     , ("Four Moves from End Test", testBestMoveFourFromEnd)
 
     -- ... (other tests)
     ]
+
 
 -- Run the tests
 main :: IO ()
