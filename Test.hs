@@ -1,7 +1,7 @@
 module Tests where
 
 import Game
-import Distribution.TestSuite
+
 
 -- Define several test cases for each function: games to compute valid moves, who has won, 
 -- who will win, and the best move from; games that should result from making moves on those games; 
@@ -11,11 +11,23 @@ import Distribution.TestSuite
 -- number of moves, no matter how either player plays." Even if there is a way to win in one move, you might 
 -- end up searching every other move first - and taking those all the way to the end of the game.
 
+type Test = IO Bool
+
+assertEqual :: (Eq a, Show a) => String -> a -> a -> IO Bool
+assertEqual label expected actual = do
+    let result = expected == actual
+    putStrLn $ label ++ " - " ++ if result then "Passed" else "Failed"
+    pure result
 
 --tests for valid moves - - - - - - - - - - - -
+
 -- Test case: Finished game
 testValidMovesFinished :: Test
-testValidMovesFinished = undefined
+testValidMovesFinished = do
+    let game = undefined  -- Replace this with your game
+        moves = validMoves game
+        finished = moves == []  -- Example condition: No moves left means finished
+    assertEqual "Game finished correctly" True finished
 
 -- Test case: One move from the end
 testValidMovesOneFromEnd :: Test
@@ -84,6 +96,7 @@ testBestMoveFourFromEnd :: Test
 testBestMoveFourFromEnd = undefined
 
 --tests for games resulting from moves- - - - - - - - - - - - - - - - - 
+
 -- Test case: Finished game
 testGameResultFinished :: Test
 testGameResultFinished = undefined
