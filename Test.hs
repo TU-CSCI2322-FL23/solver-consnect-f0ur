@@ -147,38 +147,55 @@ testWinnerFourFromEnd =  do
 --tests for who will win - - - - - - - - - - - - - - - - - - - - - - - - 
 
 -- Test case: Finished game
-testWhoWillWinFinished :: Test
-testWhoWillWinFinished = undefined
+testWhoWillWinFin :: Test
+testWhoWillWinFin = do
+    let game = (winningBoard, Yellow) 
+    assertEqual "Who will win in a finished game" (Win Yellow) (whoWillWin game) 
 
 -- Test case: One move from the end
 testWhoWillWinOneFromEnd :: Test
-testWhoWillWinOneFromEnd = undefined
+testWhoWillWinOneFromEnd = do
+    let game = unoAwayGame 
+    assertEqual "Who will win one move from the end" (Win Red) (whoWillWin game)
 
 -- Test case: Two moves from the end
 testWhoWillWinTwoFromEnd :: Test
-testWhoWillWinTwoFromEnd = undefined
+testWhoWillWinTwoFromEnd = do
+    let game = dosAwayGame 
+    assertEqual "Who will win two moves from the end" Stalemate (whoWillWin game)
 
 -- Test case: Four moves from the end
 testWhoWillWinFourFromEnd :: Test
-testWhoWillWinFourFromEnd = undefined
+testWhoWillWinFourFromEnd = do
+    let game = cuatroAwayGame 
+    assertEqual "Who will win four moves from the end" (Win Yellow) (whoWillWin game)
 
 --tests for best move - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 -- Test case: Finished game
 testBestMoveFinished :: Test
-testBestMoveFinished = undefined
+testBestMoveFinished = do
+    let game = (winningBoard, Yellow) -- needs to be finRedGame but cant get to work 
+    assertEqual "Best move in a finished game" 0 (bestMove game)
+
 
 -- Test case: One move from the end
 testBestMoveOneFromEnd :: Test
-testBestMoveOneFromEnd = undefined
+testBestMoveOneFromEnd = do
+    let game = unoAwayGame 
+    assertEqual "Best move one move from the end" 6 (bestMove game)
 
 -- Test case: Two moves from the end
 testBestMoveTwoFromEnd :: Test
-testBestMoveTwoFromEnd = undefined
+testBestMoveTwoFromEnd = do
+    let game = dosAwayGame 
+    assertEqual "Best move two moves from the end" 3 (bestMove game)
 
 -- Test case: Four moves from the end
 testBestMoveFourFromEnd :: Test
-testBestMoveFourFromEnd = undefined
+testBestMoveFourFromEnd = do
+    let game = cuatroAwayGame 
+    assertEqual "Best move four moves from the end" 2 (bestMove game)
 
 --tests for games resulting from moves- - - - - - - - - - - - - - - - - 
 
@@ -228,6 +245,16 @@ allTests =
     , ("One Move from End Test", testWinnerOneFromEnd)
     , ("Two Moves from End Test", testWinnerTwoFromEnd)
     , ("Four Moves from End Test", testWinnerFourFromEnd)
+
+    , ("Full Board Test", testWhoWillWinFin)
+    , ("One Move from End Test", testWhoWillWinOneFromEnd)
+    , ("Two Moves from End Test", testWhoWillWinTwoFromEnd)
+    , ("Four Moves from End Test", testWhoWillWinFourFromEnd)
+
+    , ("Full Board Test", testBestMoveFinished)
+    , ("One Move from End Test", testBestMoveOneFromEnd)
+    , ("Two Moves from End Test", testBestMoveTwoFromEnd)
+    , ("Four Moves from End Test", testBestMoveFourFromEnd)
 
     -- ... (other tests)
     ]
