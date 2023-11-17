@@ -29,14 +29,14 @@ emptyGame = (emptyBoard, Red)
 finRedGame :: Game
 finRedGame =
   let (_, player) = emptyGame
-      board =  [ [Yellow, Red, Yellow, Red, Yellow, Red],
-                [Red, Yellow, Red, Yellow, Red, Yellow],
-                [Yellow, Red, Yellow, Red, Yellow, Red],
-                [Red, Yellow, Red, Yellow, Red, Yellow],
-                [Yellow, Red, Yellow, Red, Yellow, Red],
-                [Red, Yellow, Red, Yellow, Red, Yellow],
-                [Yellow, Red, Yellow, Red, Yellow, Red]
-                ]
+      board = [  [] 
+                , []
+                , []
+                , []
+                , []
+                , [Red, Red, Red, Red]
+              , [Yellow, Yellow, Yellow]
+              ]
   in (board, player)
 -- Test case: One move from the end
 unoAwayGame :: Game
