@@ -118,19 +118,31 @@ testValidMovesFourFromEnd = do
 
 -- Test case: Finished game
 testWinnerFinished :: Test
-testWinnerFinished = undefined
+testWinnerFinished = do
+    let finishedGame = finRedGame 
+        winner = unsafeGameWin finishedGame  
+    assertEqual "Finished game: Verify winner" (Win Red) winner
 
 -- Test case: One move from the end
 testWinnerOneFromEnd :: Test
-testWinnerOneFromEnd = undefined
+testWinnerOneFromEnd = do
+    let oneFromEndGame = unoAwayGame  
+        winner = unsafeGameWin oneFromEndGame  
+    assertEqual "One move from end: Verify winner" (Win Red) winner  
 
 -- Test case: Two moves from the end
 testWinnerTwoFromEnd :: Test
-testWinnerTwoFromEnd = undefined
+testWinnerTwoFromEnd =  do
+    let twoFromEndGame = dosAwayGame 
+        winner = unsafeGameWin twoFromEndGame  
+    assertEqual "Two moves from end: Verify winner" (Win Red) winner  
 
 -- Test case: Four moves from the end
 testWinnerFourFromEnd :: Test
-testWinnerFourFromEnd = undefined
+testWinnerFourFromEnd =  do
+    let fourFromEndGame = cuatroAwayGame  
+        winner = unsafeGameWin fourFromEndGame  
+    assertEqual "Four moves from end: Verify winner" (Win Red) winner  
 
 --tests for who will win - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -211,9 +223,16 @@ allTests =
     , ("One Move from End Test", testValidMovesOneFromEnd)
     , ("Two Moves from End Test", testValidMovesTwoFromEnd)
     , ("Four Moves from End Test", testValidMovesFourFromEnd)
+
+    , ("Full Board Test", testWinnerFinished)
+    , ("One Move from End Test", testWinnerOneFromEnd)
+    , ("Two Moves from End Test", testWinnerTwoFromEnd)
+    , ("Four Moves from End Test", testWinnerFourFromEnd)
+
     -- ... (other tests)
     ]
 
 -- Run the tests
 main :: IO ()
 main = mapM_ runTest allTests
+
