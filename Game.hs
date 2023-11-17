@@ -30,7 +30,7 @@ type Column = [Color]
 
 -- Possibilities of states for the holes on the board
 -- We don't derive Show because we have a custom one!
-data Color = Yellow | Red deriving (Eq, Show)
+data Color = Empty | Yellow | Red deriving (Eq, Show)
 
 data Winner = Win Color | Stalemate deriving (Eq, Show) -- define win
 

@@ -21,15 +21,54 @@ assertEqual label expected actual = do
     putStrLn $ label ++ " - " ++ if result then "Passed" else "Failed"
     pure result
 
---tests for valid moves - - - - - - - - - - - -
+-- GAME STATES 
+--finished 
+finGame :: Game
+finGame = (emptyBoard, Red)
+-- Test case: One move from the end
+unoAwayGame :: Game
+unoAwayGame = 
+    let (_, player) = finGame
+        board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
+                , [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
+                , [Empty, Empty, Empty, Empty, Empty, Empty, player]  -- One move away from finishing
+                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  -- Example: Opponent's pieces
+                , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
+                , [Yellow, Red, Red, Red, Yellow, Yellow, Red]
+                ]
+    in (board, player)
+-- Test case: two move from the end
+dosAwayGame :: Game
+dosAwayGame =
+    let (_, player) = finGame
+        board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
+                , [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
+                , [Empty, Empty, Empty, Empty, Empty, player, Empty]  -- Two moves away from finishing
+                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  -- Example: Opponent's pieces
+                , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
+                , [Yellow, Red, Red, Red, Yellow, Yellow, Red]
+                ]
+        in (board, player)
 
-startGame :: Game
-startGame = (emptyBoard, Red)
+-- Test case: Four moves from the end
+tresAwayGame :: Game 
+tresAwayGame =
+    let (_, player) = finGame
+        board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]  -- Four moves away from finishing
+                , [Empty, Empty, Empty, Empty, Empty, Empty, player]
+                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  -- Example: Opponent's pieces
+                , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
+                , [Yellow, Red, Red, Red, Yellow, Yellow, Red]
+                , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
+                ]
+    in (board, player)
+    
+--tests for valid moves - - - - - - - - - - - -
 
 -- Test case: Finished game
 testValidMovesFinished :: Test
 testValidMovesFinished = do
-    let game = startGame
+    let game = finGame
         moves = validMoves game
         finished = null moves  -- No moves left means finished
     pure finished
@@ -38,7 +77,7 @@ testValidMovesFinished = do
 testValidMovesOneFromEnd :: Test
 testValidMovesOneFromEnd = undefined
 
--- Test case: Two moves from the end
+-- Test case: two move from the end
 testValidMovesTwoFromEnd :: Test
 testValidMovesTwoFromEnd = undefined
 
