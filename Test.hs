@@ -29,34 +29,31 @@ emptyGame = (emptyBoard, Red)
 finRedGame :: Game
 finRedGame =
   let (_, player) = emptyGame
-      board = [ [Red, Red, Red, Red, Empty, Empty, Empty]
-              , [Yellow, Yellow, Yellow, Empty, Empty, Empty, Empty]
-              , replicate 4 Empty
-              , replicate 4 Empty
-              , replicate 4 Empty
-              , replicate 4 Empty
-              , replicate 4 Empty
+      board = [ [Red, Red, Red, Red]
+              , [Yellow, Yellow, Yellow]
               ]
   in (board, player)
 -- Test case: One move from the end
 unoAwayGame :: Game
 unoAwayGame = 
     let (_, player) = emptyGame
-        board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
-                , [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
-                , [Empty, Empty, Empty, Empty, Empty, Empty, player]  
-                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  
-                , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
-                , [Yellow, Red, Red, Red, Yellow, Yellow, Red]
+        board = [ [] 
+                , []
+                , []
+                , []
+                , [Red, Red, Red, Yellow, Yellow, Red]  
+                , [Red, Yellow, Yellow, Red, Yellow, Red]
+                , [Yellow, Red, Red, Red, Yellow, Yellow]
                 ]
     in (board, player)
 -- Test case: two move from the end
 dosAwayGame :: Game
 dosAwayGame =
     let (_, player) = emptyGame
-        board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
-                , [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
-                , [Empty, Empty, Empty, Empty, Empty, player, Empty]  
+        board = [  [] 
+                , []
+                , []
+                , []
                 , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  
                 , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
                 , [Yellow, Red, Red, Red, Yellow, Yellow, Red]
@@ -67,8 +64,9 @@ dosAwayGame =
 cuatroAwayGame :: Game 
 cuatroAwayGame =
     let (_, player) = emptyGame
-        board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]  
-                , [Empty, Empty, Empty, Empty, Empty, Empty, player]
+        board = [ []
+                , []
+                , []
                 , [Red, Red, Red, Yellow, Yellow, Red, Yellow] 
                 , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
                 , [Yellow, Red, Red, Red, Yellow, Yellow, Red]

@@ -30,7 +30,7 @@ type Column = [Color]
 
 -- Possibilities of states for the holes on the board
 -- We don't derive Show because we have a custom one!
-data Color = Empty | Yellow | Red deriving (Eq, Show)
+data Color = Yellow | Red deriving (Eq, Show)
 
 data Winner = Win Color | Stalemate deriving (Eq, Show) -- define win
 
@@ -160,13 +160,13 @@ getDiagonalsFromBoard board =
 --Returns all groups of four columns (with columns in reverse) (assumes 7 columns)
 groupsOfFourColumns :: Board -> [[Column]]
 groupsOfFourColumns [first,second,third,fourth,fifth,sixth,seventh] =
-    let
-        one   = [reverse first,reverse second,reverse third,reverse fourth]
+    let one   = [reverse first,reverse second,reverse third,reverse fourth]
         two   = [reverse second,reverse third,reverse fourth,reverse fifth]
         three = [reverse third,reverse fourth,reverse fifth,reverse sixth]
         four  = [reverse fourth,reverse fifth,reverse sixth,reverse seventh]
-    in
-        [one,two,three,four]
+    in [one,two,three,four]
+groupsOfFourColumns board = error $ "Illegal board size: " ++ show board
+
 
 -- Returns all diagonals in group of four columns
 groupsOfFourColumnsDiagonals :: [Column] -> [[Maybe Color]]
