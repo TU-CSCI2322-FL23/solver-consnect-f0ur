@@ -21,8 +21,8 @@ assertEqual label expected actual = do
     putStrLn $ label ++ " - " ++ if result then "Passed" else "Failed"
     pure result
 
--- GAME STATES 
---empty 
+-- GAME STATES  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+--empty : used in other game states 
 emptyGame :: Game
 emptyGame = (emptyBoard, Red)
 --finished 
@@ -94,22 +94,22 @@ testValidFull = do
     assertEqual "Full Board: No valid moves" [] validMovesFull
  
 -- Test case: One move from the end
-testValidMovesOneFromEnd :: Test
-testValidMovesOneFromEnd = do
+testValidUnoAway :: Test
+testValidUnoAway = do
     let board = unoAwayGame
         validMovesUnoAway = validMoves board
     assertEqual "One Move from End: Verify valid moves" [0, 1, 2, 3, 4, 5, 6] validMovesUnoAway
 
 -- Test case: two move from the end
-testValidMovesTwoFromEnd :: Test
-testValidMovesTwoFromEnd = do
+testValidDosAway :: Test
+testValidDosAway = do
     let board = dosAwayGame
         validMovesDosAway = validMoves board
     assertEqual "Two Moves from End: Verify valid moves" [0, 1, 2, 3, 4, 5, 6] validMovesDosAway
 
 -- Test case: Four moves from the end
-testValidMovesFourFromEnd :: Test
-testValidMovesFourFromEnd = do
+testValidCuatroAway :: Test
+testValidCuatroAway = do
     let board = cuatroAwayGame
         validMovesCuatroAway = validMoves board
     assertEqual "Four Moves from End: Verify valid moves" [0, 1, 2, 3, 4, 5, 6] validMovesCuatroAway
@@ -117,8 +117,8 @@ testValidMovesFourFromEnd = do
 --tests for who has won - - - - - - - - - - - - - - - - - - - - - - - - 
 
 -- Test case: Finished game
-testWinnerFinished :: Test
-testWinnerFinished = do
+testWinnerfin :: Test
+testWinnerfin = do
     let finishedGame = finRedGame 
         winner = unsafeGameWin finishedGame  
     assertEqual "Finished game: Verify winner" (Win Red) winner
@@ -220,11 +220,11 @@ allTests :: [(String, Test)]
 allTests =
      [ ("Empty Board Test", testValidEmpty)
     , ("Full Board Test", testValidFull)
-    , ("One Move from End Test", testValidMovesOneFromEnd)
-    , ("Two Moves from End Test", testValidMovesTwoFromEnd)
-    , ("Four Moves from End Test", testValidMovesFourFromEnd)
+    , ("One Move from End Test", testValidUnoAway)
+    , ("Two Moves from End Test", testValidDosAway)
+    , ("Four Moves from End Test", testValidCuatroAway)
 
-    , ("Full Board Test", testWinnerFinished)
+    , ("Full Board Test", testWinnerfin)
     , ("One Move from End Test", testWinnerOneFromEnd)
     , ("Two Moves from End Test", testWinnerTwoFromEnd)
     , ("Four Moves from End Test", testWinnerFourFromEnd)
