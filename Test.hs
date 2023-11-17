@@ -22,17 +22,30 @@ assertEqual label expected actual = do
     pure result
 
 -- GAME STATES 
+--empty 
+emptyGame :: Game
+emptyGame = (emptyBoard, Red)
 --finished 
-finGame :: Game
-finGame = (emptyBoard, Red)
+finRedGame :: Game
+finRedGame =
+  let (_, player) = emptyGame
+      board = [ [Red, Red, Red, Red, Empty, Empty, Empty]
+              , [Yellow, Yellow, Yellow, Empty, Empty, Empty, Empty]
+              , replicate 4 Empty
+              , replicate 4 Empty
+              , replicate 4 Empty
+              , replicate 4 Empty
+              , replicate 4 Empty
+              ]
+  in (board, player)
 -- Test case: One move from the end
 unoAwayGame :: Game
 unoAwayGame = 
-    let (_, player) = finGame
+    let (_, player) = emptyGame
         board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
                 , [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
-                , [Empty, Empty, Empty, Empty, Empty, Empty, player]  -- One move away from finishing
-                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  -- Example: Opponent's pieces
+                , [Empty, Empty, Empty, Empty, Empty, Empty, player]  
+                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  
                 , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
                 , [Yellow, Red, Red, Red, Yellow, Yellow, Red]
                 ]
@@ -40,50 +53,66 @@ unoAwayGame =
 -- Test case: two move from the end
 dosAwayGame :: Game
 dosAwayGame =
-    let (_, player) = finGame
+    let (_, player) = emptyGame
         board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
                 , [Empty, Empty, Empty, Empty, Empty, Empty, Empty]
-                , [Empty, Empty, Empty, Empty, Empty, player, Empty]  -- Two moves away from finishing
-                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  -- Example: Opponent's pieces
+                , [Empty, Empty, Empty, Empty, Empty, player, Empty]  
+                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  
                 , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
                 , [Yellow, Red, Red, Red, Yellow, Yellow, Red]
                 ]
         in (board, player)
 
 -- Test case: Four moves from the end
-tresAwayGame :: Game 
-tresAwayGame =
-    let (_, player) = finGame
-        board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]  -- Four moves away from finishing
+cuatroAwayGame :: Game 
+cuatroAwayGame =
+    let (_, player) = emptyGame
+        board = [ [Empty, Empty, Empty, Empty, Empty, Empty, Empty]  
                 , [Empty, Empty, Empty, Empty, Empty, Empty, player]
-                , [Red, Red, Red, Yellow, Yellow, Red, Yellow]  -- Example: Opponent's pieces
+                , [Red, Red, Red, Yellow, Yellow, Red, Yellow] 
                 , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
                 , [Yellow, Red, Red, Red, Yellow, Yellow, Red]
                 , [Red, Yellow, Yellow, Red, Yellow, Red, Yellow]
                 ]
     in (board, player)
-    
+
+
 --tests for valid moves - - - - - - - - - - - -
 
--- Test case: Finished game
-testValidMovesFinished :: Test
-testValidMovesFinished = do
-    let game = finGame
-        moves = validMoves game
-        finished = null moves  -- No moves left means finished
-    pure finished
-    
+-- Test case: empty board 
+testValidEmpty :: Test
+testValidEmpty = do
+    let emptyBoard = replicate 7 []
+        validMovesEmpty = validMoves (emptyBoard, Red)
+    assertEqual "Empty Board: All columns are valid" [0..6] validMovesEmpty
+
+-- Test case: full board 
+testValidFull :: Test
+testValidFull = do
+    let fullBoard = replicate 7 (replicate 6 Red)
+        validMovesFull = validMoves (fullBoard, Yellow)
+    assertEqual "Full Board: No valid moves" [] validMovesFull
+ 
 -- Test case: One move from the end
 testValidMovesOneFromEnd :: Test
-testValidMovesOneFromEnd = undefined
+testValidMovesOneFromEnd = do
+    let board = unoAwayGame
+        validMovesUnoAway = validMoves board
+    assertEqual "One Move from End: Verify valid moves" [0, 1, 2, 3, 4, 5, 6] validMovesUnoAway
 
 -- Test case: two move from the end
 testValidMovesTwoFromEnd :: Test
-testValidMovesTwoFromEnd = undefined
+testValidMovesTwoFromEnd = do
+    let board = dosAwayGame
+        validMovesDosAway = validMoves board
+    assertEqual "Two Moves from End: Verify valid moves" [0, 1, 2, 3, 4, 5, 6] validMovesDosAway
 
 -- Test case: Four moves from the end
 testValidMovesFourFromEnd :: Test
-testValidMovesFourFromEnd = undefined
+testValidMovesFourFromEnd = do
+    let board = cuatroAwayGame
+        validMovesCuatroAway = validMoves board
+    assertEqual "Four Moves from End: Verify valid moves" [0, 1, 2, 3, 4, 5, 6] validMovesCuatroAway
 
 --tests for who has won - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -177,8 +206,12 @@ runTest (label, test) = do
 -- Then, for example, in your list of tests:
 allTests :: [(String, Test)]
 allTests =
-    [ ("Valid Moves Finished", testValidMovesFinished)
-    -- Include other tests similarly
+     [ ("Empty Board Test", testValidEmpty)
+    , ("Full Board Test", testValidFull)
+    , ("One Move from End Test", testValidMovesOneFromEnd)
+    , ("Two Moves from End Test", testValidMovesTwoFromEnd)
+    , ("Four Moves from End Test", testValidMovesFourFromEnd)
+    -- ... (other tests)
     ]
 
 -- Run the tests
