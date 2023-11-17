@@ -2,13 +2,16 @@
 {-# HLINT ignore "Use newtype instead of data" #-}
 {-# HLINT ignore "Eta reduce" #-}
 {-# HLINT ignore "Use <=" #-}
+{-# OPTIONS_GHC -Wno-overlapping-patterns #-}
+{-# HLINT ignore "Use second" #-}
+{-# HLINT ignore "Move guards forward" #-}
 
 module Game where
 
 import Data.List (transpose, isInfixOf)
 import Data.List.Extra (intersperse)
 import Data.Maybe (fromMaybe, catMaybes)
-
+import Debug.Trace
 
 -- Types -------------------------------------------------------------------------------------------------
 
@@ -198,17 +201,60 @@ reverseColumns = map reverse
 -- Takes a game (close to being over) and returns if the current color can force a win or a stalemate
 whoWillWin :: Game -> Winner
 whoWillWin game@(board, color) = 
-    case gameWin game of 
+    --Base case: there is already a win in the board
+    case gameWin game of
         Just outcome -> outcome
-        Nothing -> 
+        Nothing ->
+            --Makes all valid moves and resulting "childboard"
             let moves = validMoves game
                 childGames = catMaybes [ makeMove game x | x <- moves]
+                --Recursive call of whoWillWin on all "childboard"
                 winners = map whoWillWin childGames
-            in if Win color `elem` winners 
-               then Win color
+            in --trace (printGame game) $ traceShowId $
+               --If it is possible of "color" to win -> return color
+               if Win color `elem` winners
+                    then Win color
+               --If it is possible for "color" to force a draw -> return stalemate
                else if Stalemate `elem` winners
-                then Stalemate
-                else Win $ swapColor color
+                    then Stalemate
+               --If neither is possible give up and accept defeat -> return other color
+               else Win $ swapColor color
+
+--Given a game it returns the best move for the current player
+bestMove :: Game -> Move
+bestMove game@(board, color) =
+    --Makes all valid moves and resulting "childboard" (move is stored with its childboard)
+    let moves = validMoves game
+        childGames = pullOutMaybe [ (x, makeMove game x) | x <- moves]
+        --whoWillWin is called on all "childBoard"
+        winners = [(move, whoWillWin game) | (move,game) <- childGames]
+        --All moves where "color" wins
+        myColor = bestMoveHelper winners (Win color)
+        --All moves where "color" can force a tie
+        stubborn = bestMoveHelper winners Stalemate
+        --All moves wehre the other color wins
+        lastResort = bestMoveHelper winners (Win (swapColor color))
+    in
+        --If there are moves where "color" can win -> return the first of the moves
+        if not (null myColor)
+            then head myColor
+        --If there are moves wehre "color" can force a tie -> return the first of the moves
+        else if not (null stubborn)
+            then head stubborn
+        --If there are no moves for color to win or to force a tie -> give up and return move where other color can win
+        else
+            head lastResort
+
+--Takes a tuple where second element can be maybe and removes the maybes
+pullOutMaybe :: [(a, Maybe b)] -> [(a, b)]
+pullOutMaybe [] = []
+pullOutMaybe ((x, Just y):xs) = (x,y): pullOutMaybe xs
+pullOutMaybe ((x, Nothing):xs) = pullOutMaybe xs
+
+--Its like lookupVal but Jino re-wrote it
+--Returns key when given value
+bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
+bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
 
 -- test board for debugging
 testBoard :: Board
@@ -246,6 +292,8 @@ validMovesBoard = [
 
 -- Prints the board in a human-readable format.
 -- This is the function we should call elsewhere. (fyi)
+printGame :: Game -> String
+printGame (board, color) = printBoard board
 printBoard :: Board -> String
 printBoard board = unlines $ map (intersperse '|') $ reverse $ transpose $ padBoard board
     where
