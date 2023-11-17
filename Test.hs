@@ -1,6 +1,7 @@
-module Tests where
+module Test where
 
 import Game
+
 
 
 -- Define several test cases for each function: games to compute valid moves, who has won, 
@@ -9,9 +10,10 @@ import Game
 -- You will need games that are only a few moves from the end. I suggest at least one each that is finished, 
 -- one move, two moves, and four moves from the end.Caveat: In this context, "from the end" means "worst case 
 -- number of moves, no matter how either player plays." Even if there is a way to win in one move, you might 
--- end up searching every other move first - and taking those all the way to the end of the game.
+-- end up searching every other move first and taking those all the way to the end of the game.
 
 type Test = IO Bool
+type TestResult = (String, Bool)
 
 assertEqual :: (Eq a, Show a) => String -> a -> a -> IO Bool
 assertEqual label expected actual = do
@@ -21,14 +23,17 @@ assertEqual label expected actual = do
 
 --tests for valid moves - - - - - - - - - - - -
 
+startGame :: Game
+startGame = (emptyBoard, Red)
+
 -- Test case: Finished game
 testValidMovesFinished :: Test
 testValidMovesFinished = do
-    let game = undefined  -- Replace this with your game
+    let game = startGame
         moves = validMoves game
-        finished = moves == []  -- Example condition: No moves left means finished
-    assertEqual "Game finished correctly" True finished
-
+        finished = null moves  -- No moves left means finished
+    pure finished
+    
 -- Test case: One move from the end
 testValidMovesOneFromEnd :: Test
 testValidMovesOneFromEnd = undefined
@@ -122,3 +127,21 @@ testEmptyBoardToString = undefined
 -- Test case: Convert a game state to a string and back to a game state
 testStringToGameConversion :: Test
 testStringToGameConversion = undefined
+
+
+-- running test  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+runTest :: (String, Test) -> IO ()
+runTest (label, test) = do
+    result <- test
+    putStrLn $ label ++ " - " ++ if result then "Passed" else "Failed"
+
+-- Then, for example, in your list of tests:
+allTests :: [(String, Test)]
+allTests =
+    [ ("Valid Moves Finished", testValidMovesFinished)
+    -- Include other tests similarly
+    ]
+
+-- Run the tests
+main :: IO ()
+main = mapM_ runTest allTests
