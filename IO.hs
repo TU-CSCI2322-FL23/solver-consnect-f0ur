@@ -26,6 +26,14 @@ main = do
 
 -- IO Functions (Section 2) -----------------
 
+--
+-- -- Output formnat: (First color is the player whose turn it is, then it's just the board with \n to separate rows)
+-- -- RRRRRYRR
+-- -- RYRYRYR
+-- -- RYRYRYR
+-- -- RYRYRYR
+--
+
 outputBoard :: Board -> IO ()
 outputBoard board = putStrLn $ printBoard board
 
@@ -37,20 +45,11 @@ loadGame path = do
     contents <- readFile path
     return (readGame contents)
 
--- TODO: For full credit, also print the outcome that moves forces.
+-- TODO: For full credit, also print the outcome that moves forces. (What does this mean?? -SV)
 putBestMove :: Game -> IO ()
 putBestMove game = do
     let move = bestMove game
     putStrLn ("Best move: column #" ++ show move)
-
--- 
--- -- Output formnat:
--- -- R
--- -- RRRRYRR
--- -- RYRYRYR
--- -- RYRYRYR
--- -- RYRYRYR
--- 
 
 testGame :: Game
 testGame = (validMovesBoard, Red)
