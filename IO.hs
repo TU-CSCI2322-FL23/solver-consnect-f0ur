@@ -1,14 +1,28 @@
 module IO where
 
+-- Not sure why, but the bestMove function couldn't be used without importing
+-- all of these manually. If we can figure out how to import everything that might
+-- be a little nicer. -SV
 import Game
+    ( printBoard,
+      showColor,
+      testBoard,
+      Board,
+      Color(Yellow, Red),
+      Game,
+      bestMove,
+      printBoard, validMovesBoard )
+
 import GHC.IO
-import Game (printBoard)
 
 main :: IO ()
 main = do
-    putStrLn "Hello, what is your name?"
-    name <- getLine
-    putStrLn ("Hello " ++ name ++ "!")
+    putStrLn "Welcome to Connect Four!"
+    putStrLn "Enter the path to a game file to load it."
+    putStr "File to load --> "
+    filePath <- getLine
+    game <- loadGame filePath
+    putBestMove game
 
 -- IO Functions (Section 2) -----------------
 
@@ -23,6 +37,12 @@ loadGame path = do
     contents <- readFile path
     return (readGame contents)
 
+-- TODO: For full credit, also print the outcome that moves forces.
+putBestMove :: Game -> IO ()
+putBestMove game = do
+    let move = bestMove game
+    putStrLn ("Best move: column #" ++ show move)
+
 -- 
 -- -- Output formnat:
 -- -- R
@@ -33,7 +53,7 @@ loadGame path = do
 -- 
 
 testGame :: Game
-testGame = (testBoard, Red)
+testGame = (validMovesBoard, Red)
 
 readGame :: String -> Game
 readGame (player:board) =
