@@ -10,9 +10,18 @@ main = do
     name <- getLine
     putStrLn ("Hello " ++ name ++ "!")
 
+-- IO Functions (Section 2) -----------------
 
 outputBoard :: Board -> IO ()
 outputBoard board = putStrLn $ printBoard board
+
+writeGame :: Game -> FilePath -> IO ()
+writeGame game path = writeFile path (showGame game)
+
+loadGame :: FilePath -> IO Game
+loadGame path = do
+    contents <- readFile path
+    return (readGame contents)
 
 -- 
 -- -- Output formnat:
