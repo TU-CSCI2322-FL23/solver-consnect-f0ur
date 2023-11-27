@@ -87,16 +87,8 @@ boardFull board = all columnFull board
 
 --iterates over all the columns and filters out all the valid moves  
 validMoves :: Game -> [Move]
-validMoves (board, turn) = --filter (isValidMove (board, turn)) [0..length board - 1]
-    [column | (column, _) <- zip [0..] board, isValidMove (board, turn) column]
-
---helper function for validmoves
-isValidMove :: Game -> Move -> Bool
-isValidMove (board, turn) column
-    | column < 0 || column >= length board = False --out of bounds column index 
-    | length (board !! column) >= 6 = False --checks if the column is full 
-    | otherwise = True
-
+validMoves (board, turn) =
+    [move | (move, col) <- zip [0..] board, not (columnFull col)]
 
 -- Win Methods CAG  --------------------------------------------------------------------------------------------
 
