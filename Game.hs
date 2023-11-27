@@ -236,23 +236,11 @@ bestMove game@(board, color) =
     let moves = validMoves game
         childGames = pullOutMaybe [ (x, makeMove game x) | x <- moves]
         --whoWillWin is called on all "childBoard"
-        winners = [(move, whoWillWin game) | (move,game) <- childGames]
-        --All moves where "color" wins
-        myColor = bestMoveHelper winners (Win color)
-        --All moves where "color" can force a tie
-        stubborn = bestMoveHelper winners Stalemate
-        --All moves wehre the other color wins
-        lastResort = bestMoveHelper winners (Win (swapColor color))
-    in
-        --If there are moves where "color" can win -> return the first of the moves
-        if not (null myColor)
-            then head myColor
-        --If there are moves wehre "color" can force a tie -> return the first of the moves
-        else if not (null stubborn)
-            then head stubborn
-        --If there are no moves for color to win or to force a tie -> give up and return move where other color can win
-        else
-            head lastResort
+        winners = [(whoWillWin game, move) | (move,game) <- childGames]
+    in case (lookup (Win color) winners, lookup Stalemate winners) of  
+            (Just x, _) -> x
+            (Nothing, Just y) -> y
+            (Nothing, Nothing) -> snd $ head winners
 
 --Takes a tuple where second element can be maybe and removes the maybes
 pullOutMaybe :: [(a, Maybe b)] -> [(a, b)]
