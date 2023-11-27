@@ -106,11 +106,13 @@ isValidMove (board,turn) column = not (column < 0 || column >= length board || l
 
 -- Determines the winner of the game based on the current game state.
 gameWin :: Game -> Maybe Winner
-gameWin (board, color)
-  | horizontalWin board color || verticalWin board color || diagonalWin board color = Just $ Win color
-  | boardFull board = Just Stalemate
-  | otherwise = Nothing
-
+gameWin (board, oldColor)
+        | horizontalWin board color || verticalWin board color || diagonalWin board color = Just $ Win color
+        | boardFull board = Just Stalemate
+        | otherwise = Nothing
+        where
+            color = swapColor oldColor -- swapping players
+    
 --checks both colors for testing purposes
 unsafeGameWin :: Game -> Maybe Winner
 unsafeGameWin (board, color) =
