@@ -44,11 +44,11 @@ unoAwayGame =
     let (_, player) = emptyGame
         board = [ [] 
                 , []
-                , []
-                , [Yellow, Red, Yellow, Red]
-                , [Red, Red, Red, Yellow, Yellow, Red]  
-                , [Red, Yellow, Yellow, Red, Yellow, Red]
-                , [Yellow, Red, Red, Red, Yellow, Yellow]
+                , [Red, Yellow, Red]
+                , [Red, Red, Yellow, Red]  
+                , [Yellow, Yellow, Red, Yellow, Red]
+                , [Red, Red, Red, Yellow, Yellow]
+                , [Red]
                 ]
     in (board, player)
 -- Test case: two moves from the end
