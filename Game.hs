@@ -299,21 +299,9 @@ validMovesBoard = [
                          [Red, Red, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red]]
 
--- Prints the board in a human-readable format.
--- This is the function we should call elsewhere. (fyi)
-printGame :: Game -> String
-printGame (board, color) = printBoard board
-printBoard :: Board -> String
-printBoard board = unlines $ map (intersperse '|') $ reverse $ transpose $ padBoard board
-    where
-        padBoard board = map padCol board
-        padCol col = colToString col ++ replicate (6 - length col) ' '
-
-
--- Prints a given column of colors in reverse. This is just so that we can rotate the board 90 degrees and everything still lines up.
-colToString :: [Color] -> [Char]
-colToString [] = ""
-colToString lst = foldr (\x y -> showColor x : y) "" $ reverse lst
+--test game for debugging
+testGame :: Game
+testGame = (validMovesBoard, Red)
 
 -- Returns Y for Yellow and R for Red.
 showColor :: Color -> Char
