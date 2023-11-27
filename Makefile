@@ -1,6 +1,6 @@
 # Commands:
 
-name := foo
+name :=  solver-consnect-f0ur
 
 .PHONY: build init test clean doc deploy stage
 
