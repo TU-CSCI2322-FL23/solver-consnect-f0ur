@@ -78,8 +78,9 @@ makeMove (currentBoard, moveColor) x =
 
 -- takes in color and returns other color
 swapColor :: Color -> Color
-swapColor color = if color == Red then Yellow else Red
-
+swapColor color 
+    | color == Red = Yellow
+    | color == Yellow = Red
 
 --checks if the entire board is full, indicating a draw
 boardFull :: Board -> Bool
