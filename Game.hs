@@ -43,6 +43,8 @@ type Game = (Board, Color)
 -- 0 to 6 (makes it easier to code; we can change it to 1 to 7 later)
 type Move = Int
 
+type Rating = Integer
+
 
 
 -- Make the board -------------------------------------------------------------------------------------------------
@@ -264,6 +266,9 @@ pullOutMaybe ((x, Nothing):xs) = pullOutMaybe xs
 --Returns key when given value
 bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
 bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
+
+rateGame :: Game -> Rating
+rateGame = undefined
 
 -- test board for debugging
 testBoard :: Board
