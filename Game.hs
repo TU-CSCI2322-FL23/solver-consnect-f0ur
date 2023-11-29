@@ -87,10 +87,8 @@ boardFull board = all columnFull board
 
 --iterates over all the columns and filters out all the valid moves  
 validMoves :: Game -> [Move]
-validMoves (board, turn) = --filter (isValidMove (board, turn)) [0..length board - 1]
-    [column | (column, _) <- zip [0..] board, isValidMove (board, turn) column]
-
-
+validMoves (board, turn) = [move | (move, col) <- zip [0..] board, not (columnFull col)]
+ 
 {-isValidMove (board, turn) column
     | column < 0 || column >= length board = False --out of bounds column index 
     | length (board !! column) >= 6 = False --checks if the column is full 
@@ -169,13 +167,13 @@ getDiagonalsFromBoard board =
 --Returns all groups of four columns (with columns in reverse) (assumes 7 columns)
 groupsOfFourColumns :: Board -> [[Column]]
 groupsOfFourColumns [first,second,third,fourth,fifth,sixth,seventh] =
-    let
-        one   = [reverse first,reverse second,reverse third,reverse fourth]
+    let one   = [reverse first,reverse second,reverse third,reverse fourth]
         two   = [reverse second,reverse third,reverse fourth,reverse fifth]
         three = [reverse third,reverse fourth,reverse fifth,reverse sixth]
         four  = [reverse fourth,reverse fifth,reverse sixth,reverse seventh]
-    in
-        [one,two,three,four]
+    in [one,two,three,four]
+groupsOfFourColumns board = error $ "Illegal board size: " ++ show board
+
 
 -- Returns all diagonals in group of four columns
 groupsOfFourColumnsDiagonals :: [Column] -> [[Maybe Color]]
