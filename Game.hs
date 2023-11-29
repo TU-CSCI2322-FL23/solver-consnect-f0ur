@@ -78,8 +78,8 @@ makeMove (currentBoard, moveColor) x =
 
 -- takes in color and returns other color
 swapColor :: Color -> Color
-swapColor color = if color == Red then Yellow else Red
-
+swapColor Red = Yellow
+swapColor Yellow = Red
 
 --checks if the entire board is full, indicating a draw
 boardFull :: Board -> Bool
@@ -87,29 +87,44 @@ boardFull board = all columnFull board
 
 --iterates over all the columns and filters out all the valid moves  
 validMoves :: Game -> [Move]
-validMoves (board, turn) =
-    [move | (move, col) <- zip [0..] board, not (columnFull col)]
+validMoves (board, turn) = [move | (move, col) <- zip [0..] board, not (columnFull col)]
+ 
+{-isValidMove (board, turn) column
+    | column < 0 || column >= length board = False --out of bounds column index 
+    | length (board !! column) >= 6 = False --checks if the column is full 
+    | otherwise = True
+-}
+
+--helper function for validmoves
+isValidMove :: Game -> Move -> Bool
+isValidMove (board,turn) column = not (column < 0 || column >= length board || length (board!!column) >= 6)
+
 
 -- Win Methods CAG  --------------------------------------------------------------------------------------------
 
 -- Determines the winner of the game based on the current game state.
 gameWin :: Game -> Maybe Winner
-gameWin (board, color)
-  | horizontalWin board color || verticalWin board color || diagonalWin board color = Just $ Win color
-  | boardFull board = Just Stalemate
-  | otherwise = Nothing
-
+gameWin (board, oldColor)
+        | horizontalWin board color || verticalWin board color || diagonalWin board color = Just $ Win color
+        | boardFull board = Just Stalemate
+        | otherwise = Nothing
+        where
+            color = swapColor oldColor -- swapping players
+    
 --checks both colors for testing purposes
-unsafeGameWin :: Game -> Winner
+unsafeGameWin :: Game -> Maybe Winner
 unsafeGameWin (board, color) =
     let
         otherCol = swapColor color
     in
         if horizontalWin board color || verticalWin board color || diagonalWin board color
-            then Win color
+            then Just $ Win color
         else if horizontalWin board otherCol || verticalWin board otherCol || diagonalWin board otherCol
-            then Win otherCol
-        else Stalemate
+            then Just $ Win otherCol
+        else if boardFull board
+            then Just Stalemate
+        else 
+            Nothing
 
 -- Gets list of colors in all rows of board and checks if any of them has four of given color in a row
 horizontalWin :: Board -> Color -> Bool
@@ -219,23 +234,11 @@ bestMove game@(board, color) =
     let moves = validMoves game
         childGames = pullOutMaybe [ (x, makeMove game x) | x <- moves]
         --whoWillWin is called on all "childBoard"
-        winners = [(move, whoWillWin game) | (move,game) <- childGames]
-        --All moves where "color" wins
-        myColor = bestMoveHelper winners (Win color)
-        --All moves where "color" can force a tie
-        stubborn = bestMoveHelper winners Stalemate
-        --All moves wehre the other color wins
-        lastResort = bestMoveHelper winners (Win (swapColor color))
-    in
-        --If there are moves where "color" can win -> return the first of the moves
-        if not (null myColor)
-            then head myColor
-        --If there are moves wehre "color" can force a tie -> return the first of the moves
-        else if not (null stubborn)
-            then head stubborn
-        --If there are no moves for color to win or to force a tie -> give up and return move where other color can win
-        else
-            head lastResort
+        winners = [(whoWillWin game, move) | (move,game) <- childGames]
+    in case (lookup (Win color) winners, lookup Stalemate winners) of  
+            (Just x, _) -> x
+            (Nothing, Just y) -> y
+            (Nothing, Nothing) -> snd $ head winners
 
 --Takes a tuple where second element can be maybe and removes the maybes
 pullOutMaybe :: [(a, Maybe b)] -> [(a, b)]
@@ -282,21 +285,9 @@ validMovesBoard = [
                          [Red, Red, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red]]
 
--- Prints the board in a human-readable format.
--- This is the function we should call elsewhere. (fyi)
-printGame :: Game -> String
-printGame (board, color) = printBoard board
-printBoard :: Board -> String
-printBoard board = unlines $ map (intersperse '|') $ reverse $ transpose $ padBoard board
-    where
-        padBoard board = map padCol board
-        padCol col = colToString col ++ replicate (6 - length col) ' '
-
-
--- Prints a given column of colors in reverse. This is just so that we can rotate the board 90 degrees and everything still lines up.
-colToString :: [Color] -> [Char]
-colToString [] = ""
-colToString lst = foldr (\x y -> showColor x : y) "" $ reverse lst
+--test game for debugging
+testGame :: Game
+testGame = (validMovesBoard, Red)
 
 -- Returns Y for Yellow and R for Red.
 showColor :: Color -> Char
