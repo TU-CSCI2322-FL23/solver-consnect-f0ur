@@ -267,11 +267,12 @@ pullOutMaybe ((x, Nothing):xs) = pullOutMaybe xs
 bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
 bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
 
-
-
 -- Count the number of potential winning combinations for a specific color in a row, column, or diagonal
 countPotentialWins :: Board -> Color -> Int
 countPotentialWins board color =
+    -- This is just counting the wins, not counting the number of potentional wins.
+    -- possible guard placement, for an unfinished 2 in a row, and an unfinished 3 in a row. (fine-tune numbers later)
+    -- use whoWillWin to look one or two moves ahead to give points? or potentially a checkmate situation
     let
         horizontalWins = horizontalWin board color
         verticalWins = verticalWin board color
@@ -289,15 +290,27 @@ rateGame (board, color) =
         myWins - opponentWins
 
 -- test board for debugging
+
+testBoard2 :: Board
+testBoard2 = [
+    [],
+    [],
+    [],
+    [Yellow, Yellow, Red],
+    [Yellow, Red, Red],
+    [Red, Red],
+    [Yellow, Yellow, Yellow]
+    ]
+
 testBoard :: Board
 testBoard = [
-    [Yellow, Red, Yellow, Red, Yellow, Red],
-    [Red, Yellow, Red, Yellow, Red, Yellow],
-    [Yellow, Red, Yellow, Red, Yellow, Red],
-    [Red, Yellow, Red, Yellow, Red, Yellow],
-    [Yellow, Red, Yellow, Red, Yellow, Red],
-    [Red, Yellow, Red, Yellow, Red, Yellow],
-    [Yellow, Red, Yellow, Red, Yellow, Red]
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red]
     ]
 
 winningBoard :: Board
