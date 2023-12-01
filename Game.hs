@@ -43,7 +43,7 @@ type Game = (Board, Color)
 -- 0 to 6 (makes it easier to code; we can change it to 1 to 7 later)
 type Move = Int
 
-type Rating = Integer
+type Rating = Int
 
 
 
@@ -267,8 +267,26 @@ pullOutMaybe ((x, Nothing):xs) = pullOutMaybe xs
 bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
 bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
 
+
+
+-- Count the number of potential winning combinations for a specific color in a row, column, or diagonal
+countPotentialWins :: Board -> Color -> Int
+countPotentialWins board color =
+    let
+        horizontalWins = horizontalWin board color
+        verticalWins = verticalWin board color
+        diagonalWins = diagonalWin board color
+    in
+        length $ filter id [horizontalWins, verticalWins, diagonalWins] --id :: a -> a
+
+-- Evaluate the game state based on potential wins
 rateGame :: Game -> Rating
-rateGame = undefined
+rateGame (board, color) =
+    let
+        myWins = countPotentialWins board color
+        opponentWins = countPotentialWins board (swapColor color)
+    in
+        myWins - opponentWins
 
 -- test board for debugging
 testBoard :: Board
