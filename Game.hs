@@ -114,7 +114,7 @@ gameWin (board, oldColor)
         | otherwise = Nothing
         where
             color = swapColor oldColor -- swapping players
-    
+
 --checks both colors for testing purposes
 unsafeGameWin :: Game -> Maybe Winner
 unsafeGameWin (board, color) =
@@ -127,7 +127,7 @@ unsafeGameWin (board, color) =
             then Just $ Win otherCol
         else if boardFull board
             then Just Stalemate
-        else 
+        else
             Nothing
 
 -- Gets list of colors in all rows of board and checks if any of them has four of given color in a row
@@ -211,7 +211,7 @@ reverseColumns = map reverse
 
 -- Takes a game (close to being over) and returns if the current color can force a win or a stalemate
 whoWillWin :: Game -> Winner
-whoWillWin game@(board, color) = 
+whoWillWin game@(board, color) =
     --Base case: there is already a win in the board
     case gameWin game of
         Just outcome -> outcome
@@ -268,19 +268,29 @@ pullOutMaybe ((x, Nothing):xs) = pullOutMaybe xs
 bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
 bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
 
+-- yellowscore is the positive number 
 rateGame :: Game -> Rating
-rateGame (board, color) =
+rateGame (board, _) =
     let
-        myScore = calculateScore board color
-        opponentScore = calculateScore board (swapColor color)
+        yellowScore = calculateScore board Yellow
+        redScore = calculateScore board Red
+        --_ = traceShow ("Yellow Score: ", yellowScore) yellowScore
+        --_ = traceShow ("Red Score: ", redScore) redScore
     in
-        myScore - opponentScore
+        yellowScore - redScore
 
 -- calculating score based on # of consecutive pieces 
 calculateScore :: Board -> Color -> Rating
 calculateScore board color =
-    sum $ concatMap (\window -> map (length . takeWhile (== color)) window) (groupsOfFourColumns board)
+    sum $ concatMap (map (length . takeWhile (== color))) (groupsOfFourColumns board)
 
+verticalScore :: Board -> Rating
+verticalScore board = sum $ map columnScore board
+
+columnScore (a:b:c:d:rest) = rateFour [a,b,c,d] + columnScore (b:c:d:rest)
+
+rateFour :: [Color] -> Rating
+rateFour -- if htere is both yellow and red, then 0, else # yellows - # reds
 -- test board for debugging
 
 testBoard2 :: Board
@@ -357,7 +367,7 @@ testBoardForPotentialWins = [
     [Red   , Yellow, Red   , Yellow, Red   , Yellow],
     [Yellow, Red   , Yellow, Red   , Yellow, Red]
     ]
-    
+
 
 --test game for debugging
 testGame :: Game
