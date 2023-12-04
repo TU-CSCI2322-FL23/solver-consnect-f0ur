@@ -264,30 +264,27 @@ pullOutMaybe ((x, Nothing):xs) = pullOutMaybe xs
 
 --Its like lookupVal but Jino re-wrote it
 --Returns key when given value
+
 bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
 bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
 
--- Count the number of potential winning combinations for a specific color in a row, column, or diagonal
-countPotentialWins :: Board -> Color -> Int
-countPotentialWins board color =
-    -- This is just counting the wins, not counting the number of potentional wins.
-    -- possible guard placement, for an unfinished 2 in a row, and an unfinished 3 in a row. (fine-tune numbers later)
-    -- use whoWillWin to look one or two moves ahead to give points? or potentially a checkmate situation
-    let
-        horizontalWins = horizontalWin board color
-        verticalWins = verticalWin board color
-        diagonalWins = diagonalWin board color
-    in
-        length $ filter id [horizontalWins, verticalWins, diagonalWins] --id :: a -> a
-
--- Evaluate the game state based on potential wins
 rateGame :: Game -> Rating
 rateGame (board, color) =
     let
-        myWins = countPotentialWins board color
-        opponentWins = countPotentialWins board (swapColor color)
+        myScore = calculateScore board color
+        opponentScore = calculateScore board (swapColor color)
     in
-        myWins - opponentWins
+        myScore - opponentScore
+
+-- score based on number of consecutive pieces 
+calculateScore :: Board -> Color -> Rating
+calculateScore board color =
+    sum $ consecutivePieces color board
+
+-- counting number of consecutive pieces 
+consecutivePieces :: Color -> Board -> [Int]
+consecutivePieces color board =
+    concatMap (\window -> map (length . takeWhile (== color)) window) (groupsOfFourColumns board)
 
 -- test board for debugging
 
@@ -335,9 +332,47 @@ validMovesBoard = [
                          [Red, Red, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red]]
 
+validMovesBoardTwo :: Board --Where yellow is the winner
+validMovesBoardTwo = [
+                    [Yellow, Red, Yellow, Red],
+            [Red, Yellow, Red, Yellow],
+            [Red, Yellow, Red, Yellow, Red],
+            [Red, Yellow, Red, Red, Yellow],
+            [Yellow, Yellow, Red, Yellow, Red],
+                            [Red, Red, Yellow],
+    [Yellow, Red, Yellow, Red, Yellow, Red]]
+
+validMovesBoardThree :: Board --Where red is the winner
+validMovesBoardThree = [
+            [Yellow, Red, Yellow, Red],
+            [Red, Yellow, Red, Red, Yellow],
+            [Red, Yellow, Red, Yellow, Red],
+            [Red, Red, Red, Yellow],
+        [Yellow, Yellow, Red, Yellow, Red],
+                        [Red, Red, Yellow],
+        [Yellow, Red, Yellow, Red, Yellow, Red]]
+
+testBoardForPotentialWins :: Board
+testBoardForPotentialWins = [
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red]
+    ]
+    
+
 --test game for debugging
 testGame :: Game
 testGame = (validMovesBoard, Red)
+
+testGameTwo :: Game
+testGameTwo = (validMovesBoardTwo, Red)
+
+testGameThree :: Game
+testGameThree = (validMovesBoardThree, Red)
 
 -- Returns Y for Yellow and R for Red.
 showColor :: Color -> Char
