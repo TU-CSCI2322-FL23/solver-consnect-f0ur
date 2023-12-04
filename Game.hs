@@ -268,7 +268,6 @@ pullOutMaybe ((x, Nothing):xs) = pullOutMaybe xs
 bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
 bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
 
-
 -- rateGame section
 -- utilized chatgpt for assistance
 rateGame :: Game -> Rating
@@ -332,7 +331,6 @@ diag board (x,y) =
         dy = 1
 
 -- test board for debugging
-
 
 testBoard2 :: Board
 testBoard2 = [
