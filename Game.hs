@@ -276,15 +276,10 @@ rateGame (board, color) =
     in
         myScore - opponentScore
 
--- score based on number of consecutive pieces 
+-- calculating score based on # of consecutive pieces 
 calculateScore :: Board -> Color -> Rating
 calculateScore board color =
-    sum $ consecutivePieces color board
-
--- counting number of consecutive pieces 
-consecutivePieces :: Color -> Board -> [Int]
-consecutivePieces color board =
-    concatMap (\window -> map (length . takeWhile (== color)) window) (groupsOfFourColumns board)
+    sum $ concatMap (\window -> map (length . takeWhile (== color)) window) (groupsOfFourColumns board)
 
 -- test board for debugging
 
