@@ -269,19 +269,70 @@ bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
 bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
 
 rateGame :: Game -> Rating
-rateGame (board, color) =
+rateGame (board, color) = 
     let
-        myScore = calculateScore board color
-        opponentScore = calculateScore board (swapColor color)
+        myScore = calculateAdvancedScore board color
+        opponentScore = calculateAdvancedScore board (swapColor color)
     in
         myScore - opponentScore
 
--- calculating score based on # of consecutive pieces 
-calculateScore :: Board -> Color -> Rating
-calculateScore board color =
-    sum $ concatMap (\window -> map (length . takeWhile (== color)) window) (groupsOfFourColumns board)
+calculateAdvancedScore :: Board -> Color -> Rating
+calculateAdvancedScore board color = 
+    sum [ scoreForLine line color | line <- allLines board, lineColorCount line color > 0 ]
+
+
+-- Scores a line (horizontal, vertical, or diagonal) based on the number of pieces of the given color
+scoreForLine :: [Color] -> Color -> Rating
+scoreForLine line color =
+    let
+        colorCount = lineColorCount line color
+    in
+        case colorCount of
+            4 -> 1000  -- Winning condition
+            3 -> 100   -- Almost winning
+            2 -> 10    -- Potential line
+            1 -> 1     -- Single piece
+            _ -> 0
+
+lineColorCount :: [Color] -> Color -> Int
+lineColorCount line color = length $ filter (== color) line
+
+-- Generate all possible lines (horizontal, vertical, diagonal) from the board
+allLines :: Board -> [[Color]]
+allLines board = 
+    let
+        horizontalLines = board
+        verticalLines = transpose board
+        diagonalLines = diagonals board
+    in
+        horizontalLines ++ verticalLines ++ diagonalLines
+
+-- Function to calculate diagonals would be added here
+diagonals :: Board -> [[Color]]
+diagonals board =
+    let n = length board
+        m = length (head board)
+        -- Positive diagonals
+        posDiags = [ diag board (x,0) | x <- [0..n-1] ] ++ [ diag board (0,y) | y <- [1..m-1] ]
+        -- Negative diagonals
+        negDiags = [ diag board (x,m-1) | x <- [0..n-1] ] ++ [ diag board (0,y) | y <- [0..m-2] ]
+    in posDiags ++ negDiags
+
+-- Function to extract a diagonal from a given start position
+diag :: Board -> (Int, Int) -> [Color]
+diag board (x,y) =
+    if x >= length board || y >= length (head board) || x < 0 || y < 0
+    then []
+    else (board !! x !! y) : diag board (x+dx, y+dy)
+    where
+        dx = if y == (length (head board) - 1) then 1 else -1
+        dy = 1
+
+-- These functions should return lists of all possible windows of four cells in their respective directions.
 
 -- test board for debugging
+
+
 
 testBoard2 :: Board
 testBoard2 = [
@@ -311,7 +362,7 @@ winningBoard = [
     [Red, Red, Red, Yellow, Red, Yellow, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red, Red],
     [Red, Yellow, Red, Yellow, Red, Yellow, Yellow],
-    [Yellow, Yellow, Yellow, Yellow, Red, Red, Red],
+    [Yellow, Yellow, Yellow, Red, Red, Red, Red],
     [Red, Red, Red, Red, Yellow, Yellow, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red, Yellow]
     ]
