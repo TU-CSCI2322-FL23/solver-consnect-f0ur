@@ -43,6 +43,8 @@ type Game = (Board, Color)
 -- 0 to 6 (makes it easier to code; we can change it to 1 to 7 later)
 type Move = Int
 
+type Rating = Int
+
 
 
 -- Make the board -------------------------------------------------------------------------------------------------
@@ -248,19 +250,94 @@ pullOutMaybe ((x, Nothing):xs) = pullOutMaybe xs
 
 --Its like lookupVal but Jino re-wrote it
 --Returns key when given value
+
 bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
 bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
 
+-- rateGame section
+-- utilized chatgpt for assistance
+rateGame :: Game -> Rating
+rateGame (board, color) = 
+    let
+        myScore = calculateAdvancedScore board color
+        opponentScore = calculateAdvancedScore board (swapColor color)
+    in
+        myScore - opponentScore
+
+calculateAdvancedScore :: Board -> Color -> Rating
+calculateAdvancedScore board color = 
+    sum [ scoreForLine line color | line <- allLines board, lineColorCount line color > 0 ]
+
+
+-- Scores a line (horizontal, vertical, or diagonal) based on the number of pieces of the given color
+scoreForLine :: [Color] -> Color -> Rating
+scoreForLine line color =
+    let
+        colorCount = lineColorCount line color
+    in
+        case colorCount of
+            4 -> 1000  -- Winning condition
+            3 -> 100   -- Almost winning
+            2 -> 10    -- Potential line
+            1 -> 1     -- Single piece
+            _ -> 0
+
+lineColorCount :: [Color] -> Color -> Int
+lineColorCount line color = length $ filter (== color) line
+
+-- Generate all possible lines (horizontal, vertical, diagonal) from the board
+allLines :: Board -> [[Color]]
+allLines board = 
+    let
+        horizontalLines = board
+        verticalLines = transpose board
+        diagonalLines = diagonals board
+    in
+        horizontalLines ++ verticalLines ++ diagonalLines
+
+-- Function to calculate diagonals would be added here
+diagonals :: Board -> [[Color]]
+diagonals board =
+    let n = length board
+        m = length (head board)
+        -- Positive diagonals
+        posDiags = [ diag board (x,0) | x <- [0..n-1] ] ++ [ diag board (0,y) | y <- [1..m-1] ]
+        -- Negative diagonals
+        negDiags = [ diag board (x,m-1) | x <- [0..n-1] ] ++ [ diag board (0,y) | y <- [0..m-2] ]
+    in posDiags ++ negDiags
+
+-- Function to extract a diagonal from a given start position
+diag :: Board -> (Int, Int) -> [Color]
+diag board (x,y) =
+    if x >= length board || y >= length (head board) || x < 0 || y < 0
+    then []
+    else (board !! x !! y) : diag board (x+dx, y+dy)
+    where
+        dx = if y == (length (head board) - 1) then 1 else -1
+        dy = 1
+
 -- test board for debugging
+
+testBoard2 :: Board
+testBoard2 = [
+    [],
+    [],
+    [],
+    [Yellow, Yellow, Red],
+    [Yellow, Red, Red],
+    [Red, Red],
+    [Yellow, Yellow, Yellow]
+    ]
+
 testBoard :: Board
 testBoard = [
-    [Yellow, Red, Yellow, Red, Yellow, Red],
-    [Red, Yellow, Red, Yellow, Red, Yellow],
-    [Yellow, Red, Yellow, Red, Yellow, Red],
-    [Red, Yellow, Red, Yellow, Red, Yellow],
-    [Yellow, Red, Yellow, Red, Yellow, Red],
-    [Red, Yellow, Red, Yellow, Red, Yellow],
-    [Yellow, Red, Yellow, Red, Yellow, Red]
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red]
     ]
 
 winningBoard :: Board
@@ -269,7 +346,7 @@ winningBoard = [
     [Red, Red, Red, Yellow, Red, Yellow, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red, Red],
     [Red, Yellow, Red, Yellow, Red, Yellow, Yellow],
-    [Yellow, Yellow, Yellow, Yellow, Red, Red, Red],
+    [Yellow, Yellow, Yellow, Red, Red, Red, Red],
     [Red, Red, Red, Red, Yellow, Yellow, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red, Yellow]
     ]
@@ -285,9 +362,47 @@ validMovesBoard = [
                          [Red, Red, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red]]
 
+validMovesBoardTwo :: Board --Where yellow is the winner
+validMovesBoardTwo = [
+                    [Yellow, Red, Yellow, Red],
+            [Red, Yellow, Red, Yellow],
+            [Red, Yellow, Red, Yellow, Red],
+            [Red, Yellow, Red, Red, Yellow],
+            [Yellow, Yellow, Red, Yellow, Red],
+                            [Red, Red, Yellow],
+    [Yellow, Red, Yellow, Red, Yellow, Red]]
+
+validMovesBoardThree :: Board --Where red is the winner
+validMovesBoardThree = [
+            [Yellow, Red, Yellow, Red],
+            [Red, Yellow, Red, Red, Yellow],
+            [Red, Yellow, Red, Yellow, Red],
+            [Red, Red, Red, Yellow],
+        [Yellow, Yellow, Red, Yellow, Red],
+                        [Red, Red, Yellow],
+        [Yellow, Red, Yellow, Red, Yellow, Red]]
+
+testBoardForPotentialWins :: Board
+testBoardForPotentialWins = [
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red],
+    [Red   , Yellow, Red   , Yellow, Red   , Yellow],
+    [Yellow, Red   , Yellow, Red   , Yellow, Red]
+    ]
+    
+
 --test game for debugging
 testGame :: Game
 testGame = (validMovesBoard, Red)
+
+testGameTwo :: Game
+testGameTwo = (validMovesBoardTwo, Red)
+
+testGameThree :: Game
+testGameThree = (validMovesBoardThree, Red)
 
 -- Returns Y for Yellow and R for Red.
 showColor :: Color -> Char
