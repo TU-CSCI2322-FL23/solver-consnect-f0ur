@@ -268,6 +268,9 @@ pullOutMaybe ((x, Nothing):xs) = pullOutMaybe xs
 bestMoveHelper :: [(Move, Winner)] -> Winner -> [Move]
 bestMoveHelper tuples win = [fst x | x <- tuples, snd x == win]
 
+
+-- rateGame section
+-- utilized chatgpt for assistance
 rateGame :: Game -> Rating
 rateGame (board, color) = 
     let
@@ -328,10 +331,7 @@ diag board (x,y) =
         dx = if y == (length (head board) - 1) then 1 else -1
         dy = 1
 
--- These functions should return lists of all possible windows of four cells in their respective directions.
-
 -- test board for debugging
-
 
 
 testBoard2 :: Board
