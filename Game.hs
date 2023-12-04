@@ -300,3 +300,8 @@ showWinner :: Winner -> String
 showWinner (Win Yellow) = "Yellow"
 showWinner (Win Red) = "Red"
 showWinner Stalemate = "Stalemate"
+
+type Rating = Int
+
+whoMightWin :: Game -> Int -> (Rating, Move)
+whoMightWin game x = (5, x)
