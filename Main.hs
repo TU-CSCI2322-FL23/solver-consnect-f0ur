@@ -1,10 +1,13 @@
+{-# HLINT ignore "Redundant bracket" #-}
+{-# LANGUAGE BlockArguments #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
 module Main where
 
 import Data.Maybe (fromJust)
 import Data.Maybe qualified
 import Game
 import IO
-import System.Console.ANSI
 import System.Console.GetOpt
 import System.Environment
 
@@ -36,7 +39,7 @@ options =
       ['i']
       ["interactive"]
       (NoArg Interactive)
-      "MAKE THE GAME INTERACTIVE!!! YAY!",
+      "Starts an interactive game of Connect Four.",
     Option
       ['v']
       ["verbose"]
@@ -52,18 +55,27 @@ main =
 
     if Help `elem` flags || null args
       then putStrLn $ usageInfo "Usage: connect-four [OPTION...] [FILE]" options
-      else do
-        -- should maybe be moved into if null flags condition
-        game@(board, player) <- loadGame (head inputs)
-        outputBoard board
+      else
+        if Interactive `elem` flags
+          then -- start an interactive game
 
-        if null flags
-          then
-            let (rating, move) = whoMightWin game 3
-             in returnBestMove (rating, move) game (hasVerbose flags)
-          else handleFlags flags game
+            if null inputs
+              then playGame (emptyBoard, Game.Red) flags
+              else do
+                game@(board, player) <- loadGame (head inputs)
+                playGame (board, Game.Red) flags
+          else do
+            -- should maybe be moved into if null flags condition
+            game@(board, player) <- loadGame (head inputs)
+            outputBoard board
 
-        return ()
+            if null flags
+              then
+                let (rating, move) = whoMightWin game 3
+                 in returnBestMove (rating, move) game (hasVerbose flags)
+              else handleFlags flags game
+
+            return ()
 
 -- takes in rating and move along with a bool for if verbose flag is active (true if verbose is in flags / false if it isn't in flags) *use hasverbose
 -- should return the best move, and if verbose is active, print the best move and the rating plus whether it's a win or loss or tie or nothing.
@@ -78,6 +90,8 @@ returnBestMove (rating, move) game isVerbose =
           Nothing -> putStrLn $ "The best move is column #" ++ show move ++ " with a rating of " ++ show rating
         else putStrLn $ "The best move is column #" ++ show move ++ "."
 
+-- takes in a list of flags and a game
+-- if winner flag is in flags, print the best move and exit
 handleFlags :: [Flag] -> Game -> IO ()
 handleFlags flags game@(board, player)
   | Winner `elem` flags = putStrLn ("The best move is " ++ show (bestMove game))
@@ -98,58 +112,41 @@ handleFlags flags game@(board, player)
        in returnBestMove (rating, move) game True
   | otherwise = return ()
 
+-- Starts an interactive game of Connect Four
+playGame :: Game -> [Flag] -> IO ()
+playGame game flags
+  | Depth x <- head flags = playGameRecur game 3
+  | otherwise = playGameRecur game 3
+
+playGameRecur :: Game -> Int -> IO ()
+playGameRecur game depth =
+  -- check for win on game
+  let winner = gameWin game
+   in if Data.Maybe.isNothing winner
+        then do
+          outputBoard (fst game)
+          putStrLn "Enter a column number to make a move (0-6): "
+          move <- getLine
+          let newGame = makeMove game (read move :: Int)
+          if isValidMove game (read move :: Int)
+            then case newGame of
+              Just outputGame -> do
+                let (rating, move) = whoMightWin game depth
+                -- call make move with move
+                playGameRecur outputGame depth
+              Nothing -> do
+                putStrLn "Invalid move"
+                playGameRecur game depth
+            else do
+              putStrLn "Invalid move"
+              playGameRecur game depth
+        else do
+          outputBoard (fst game)
+          case winner of
+            Just (Win Game.Yellow) -> putStrLn "Yellow Wins!!!"
+            Just (Win Game.Red) -> putStrLn "Red Wins!!!"
+            Just Stalemate -> putStrLn "Stalemate...Sorry Folks"
+
+-- Returns true if the Verbose flag is present in the list of flags
 hasVerbose :: [Flag] -> Bool
 hasVerbose flags = Verbose `elem` flags
-
--- case flag of
--- Winner -> putStrLn ("The best move is " ++ show (bestMove game))
--- Help -> putStrLn $ usageInfo "Usage: connect-four [OPTION...] [FILE]" options
--- Depth depth -> let (rating, move) = whoMightWin game (read depth :: Int)
---         in putStrLn $ "The best move is " ++ show move ++ " with a rating of " ++ show rating
--- _ -> putStrLn "AHHHHHH!!!! ERRROR!!!! AAHAHHAA"
-
--- if Help `elem` flags
--- then
---     if not $ null inputs
---     then putStrLn $ usageInfo "Usage: connect-four [OPTION...] [FILE]" options
---     else putStrLn $ "Please input a file.\n" ++ usageInfo "Usage: connect-four [OPTION...] [FILE]" options
--- else if not $ null inputs
--- then
---     --let (rating, move) = whoWillWin (loadGame (head inputs)) 3
---         --in putStrLn $ "The best move is " ++ show move ++ " with a rating of " ++ show rating
---     let moves = game
---         in putStrLn $ "The best move is " ++ showGame game ++ " with a rating of " ++ "NA"
--- else
---     putStrLn "AHHHHHH!!!! ERRROR!!!! AAHAHHAA"
-
--- else if Winner `elem` flags
--- then
---     putStrLn "winner winner chicken dinner!"
--- else if Interactive `elem` flags
--- then
---     putStrLn "interactive interactive chicken interactive!"
--- else if Verbose `elem` flags
--- then
---     putStrLn "verbose verbose chicken verbose!"
--- else if Move "STRING!" `elem` flags
--- then
---     putStrLn "move move chicken move!"
--- else if Depth "STRING!" `elem` flags
--- then
---     putStrLn "depth depth chicken depth!"
--- else
---     putStrLn "no flags chicken no flags!"
-
-{-
-
-setSGR [SetColor Foreground Vivid Green]
-putStrLn "    Welcome to Connect Four!"
-putStrLn "--------------------------------"
-setSGR [Reset]
-putStrLn "Enter the path to a game file to load it."
-putStr "File to load --> "
-filePath <- getLine
-game <- loadGame filePath
-putBestMove game
-
--}
