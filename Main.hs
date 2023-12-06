@@ -29,30 +29,41 @@ main :: IO ()
 main =
  do args <- getArgs
     let (flags, inputs, errors) = getOpt Permute options args
-    game@(board, player) <- loadGame (head inputs)
+    
+    if Help `elem` flags
+    then 
+        putStrLn $ usageInfo "Usage: connect-four [OPTION...] [FILE]" options
+    else 
+        do
+        --should maybe be moved into if null flags condition
+        game@(board, player) <- loadGame (head inputs)
+        outputBoard board
 
-    --should maybe be moved into if null flags condition
-    outputBoard board
+        if null flags
+        then
+            let (rating, move) = whoMightWin game 3
+            in 
+                returnBestMove (rating, move) (hasVerbose flags)
+        else handleFlags flags game
 
-    if null flags
-    then
-        let (rating, move) = whoMightWin game 3
-        in 
-            returnBestMove (rating, move) (hasVerbose flags)
-    else handleFlags flags game
-
-    return ()
+        return ()
 
 --takes in rating and move along with a bool for if verbose flag is active (true if verbose is in flags / false if it isn't in flags) *use hasverbose
 returnBestMove :: (Rating, Move) -> Bool -> IO()
 returnBestMove (rating, move) condition = 
     if condition
-        then putStrLn $ "The best move is " ++ show move ++ " with a rating of " ++ show rating
-    else putStrLn $ "The best move is " ++ show move
+    then 
+     do
+        if 0 == 0
+        putStrLn $ "The best move is " ++ show move ++ " with a rating of " ++ show rating
+
+    else 
+        putStrLn $ "The best move is " ++ show move
+
+
 
 handleFlags :: [Flag] -> Game -> IO ()
 handleFlags flags game@(board, player)
-  | Help `elem` flags = putStrLn $ usageInfo "Usage: connect-four [OPTION...] [FILE]" options
   | Winner `elem` flags = putStrLn ("The best move is " ++ show (bestMove game))
   | Move move <- head flags =
     let hasVerbose = Verbose `elem` flags
@@ -67,6 +78,10 @@ handleFlags flags game@(board, player)
         let (rating, move) = whoMightWin game (read x)
         in 
             returnBestMove (rating, move) (hasVerbose flags)
+  | Verbose `elem` flags =
+        let (rating, move) = whoMightWin game 3
+        in 
+            returnBestMove (rating, move) True
   | otherwise = return ()
 
 hasVerbose :: [Flag] -> Bool

@@ -301,6 +301,13 @@ showWinner (Win Yellow) = "Yellow"
 showWinner (Win Red) = "Red"
 showWinner Stalemate = "Stalemate"
 
+-- SAM AND JINO ARE USING THESE FOR TESTING PURPOSES!!!
+-- DELETE THEM IF WE DON'T!!! AAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH!!
+--   | 
+--   |
+--  \ /
+--   `
+
 type Rating = Int
 
 whoMightWin :: Game -> Int -> (Rating, Move)
