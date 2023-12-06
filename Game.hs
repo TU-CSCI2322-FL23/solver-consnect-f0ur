@@ -495,6 +495,6 @@ testWhoMightWin = do
     print $ whoMightWin (testBoardNearEndGame, Yellow) 3
 
 -- Run the test
-main :: IO ()
-main = testWhoMightWin
+--main :: IO ()
+--main = testWhoMightWin
 

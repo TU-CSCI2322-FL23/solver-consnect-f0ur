@@ -11,7 +11,7 @@ import IO
 import System.Console.GetOpt
 import System.Environment
 
-data Flag = Winner | Depth String | Help | Move String | Verbose | Interactive deriving (Show, Eq)
+data Flag = Winner | Depth String | Help | Move String | Verbose | Interactive | Battle deriving (Show, Eq)
 
 options :: [OptDescr Flag]
 options =
@@ -41,6 +41,11 @@ options =
       (NoArg Interactive)
       "Starts an interactive game of Connect Four.",
     Option
+      ['b']
+      ["battle"]
+      (NoArg Battle)
+      "Starts a Connect Four battle between two players (pass the keyboard)",
+    Option
       ['v']
       ["verbose"]
       (NoArg Verbose)
@@ -58,12 +63,18 @@ main =
       else
         if Interactive `elem` flags
           then -- start an interactive game
-
             if null inputs
               then playGame (emptyBoard, Game.Red) flags
               else do
                 game@(board, player) <- loadGame (head inputs)
                 playGame (board, Game.Red) flags
+          else if Battle `elem` flags
+            then 
+              if null inputs
+                then battleGame (emptyBoard, Game.Red) flags
+                else do
+                  game@(board, player) <- loadGame (head inputs)
+                  battleGame (board, Game.Red) flags
           else do
             -- should maybe be moved into if null flags condition
             game@(board, player) <- loadGame (head inputs)
@@ -115,7 +126,7 @@ handleFlags flags game@(board, player)
 -- Starts an interactive game of Connect Four
 playGame :: Game -> [Flag] -> IO ()
 playGame game flags
-  | Depth x <- head flags = playGameRecur game 3
+  | Depth x <- head flags = playGameRecur game (read x)
   | otherwise = playGameRecur game 3
 
 playGameRecur :: Game -> Int -> IO ()
@@ -132,7 +143,7 @@ playGameRecur game depth =
             then case newGame of
               Just outputGame ->
                 do
-                  let (rating, move) = whoMightWin game depth
+                  let (rating, move) = whoMightWin outputGame depth
                   let winner = gameWin outputGame
                   outputBoard (fst outputGame)
                   if (Data.Maybe.isJust winner)
@@ -150,10 +161,31 @@ playGameRecur game depth =
         else do
           outputBoard (fst game)
           outputMaybeWinner winner
-          --case winner of
-          --  Just (Win Game.Yellow) -> putStrLn "Yellow Wins!!!"
-          --  Just (Win Game.Red) -> putStrLn "Red Wins!!!"
-          --  Just Stalemate -> putStrLn "Stalemate...Sorry Folks"
+
+-- Starts an interactive game of Connect Four
+battleGame :: Game -> [Flag] -> IO ()
+battleGame game flags
+  | Depth x <- head flags = battleGameRecur game (read x)
+  | otherwise = battleGameRecur game 3
+
+battleGameRecur :: Game -> Int -> IO ()
+battleGameRecur game depth =
+  -- check for win on game
+  let winner = gameWin game
+   in if Data.Maybe.isNothing winner
+        then do
+          outputBoard (fst game)
+          putStrLn $ "Its " ++ show (snd game) ++ "'s turn to enter a column number to make their move (0-6): "
+          move <- getLine
+          let newGame = makeMove game (read move :: Int)
+          case newGame of
+              Just outputGame -> battleGameRecur outputGame depth
+              Nothing -> do
+                putStrLn "Invalid move"
+                battleGameRecur game depth
+      else do
+      outputBoard (fst game)
+      outputMaybeWinner winner
 
 outputMaybeWinner :: Maybe Winner -> IO()
 outputMaybeWinner (Just (Win Game.Yellow)) = putStrLn "Yellow Wins!!!"
