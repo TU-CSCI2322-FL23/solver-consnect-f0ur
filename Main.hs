@@ -130,10 +130,13 @@ playGameRecur game depth =
           let newGame = makeMove game (read move :: Int)
           if isValidMove game (read move :: Int)
             then case newGame of
-              Just outputGame -> do
-                let (rating, move) = whoMightWin game depth
-                -- call make move with move
-                playGameRecur outputGame depth
+              Just outputGame ->
+                do
+                  let (rating, move) = whoMightWin game depth
+                  -- call make move with move
+                  case makeMove outputGame move of
+                    Just x -> playGameRecur x depth
+                    Nothing -> putStrLn "Something bad happened"
               Nothing -> do
                 putStrLn "Invalid move"
                 playGameRecur game depth
