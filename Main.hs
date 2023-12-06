@@ -133,10 +133,14 @@ playGameRecur game depth =
               Just outputGame ->
                 do
                   let (rating, move) = whoMightWin game depth
-                  -- call make move with move
-                  case makeMove outputGame move of
-                    Just x -> playGameRecur x depth
-                    Nothing -> putStrLn "Something bad happened"
+                  let winner = gameWin outputGame
+                  outputBoard (fst outputGame)
+                  if (Data.Maybe.isJust winner)
+                    then outputMaybeWinner winner
+                  else
+                    case makeMove outputGame move of
+                      Just x -> playGameRecur x depth
+                      Nothing -> putStrLn "Column Full"
               Nothing -> do
                 putStrLn "Invalid move"
                 playGameRecur game depth
@@ -145,10 +149,16 @@ playGameRecur game depth =
               playGameRecur game depth
         else do
           outputBoard (fst game)
-          case winner of
-            Just (Win Game.Yellow) -> putStrLn "Yellow Wins!!!"
-            Just (Win Game.Red) -> putStrLn "Red Wins!!!"
-            Just Stalemate -> putStrLn "Stalemate...Sorry Folks"
+          outputMaybeWinner winner
+          --case winner of
+          --  Just (Win Game.Yellow) -> putStrLn "Yellow Wins!!!"
+          --  Just (Win Game.Red) -> putStrLn "Red Wins!!!"
+          --  Just Stalemate -> putStrLn "Stalemate...Sorry Folks"
+
+outputMaybeWinner :: Maybe Winner -> IO()
+outputMaybeWinner (Just (Win Game.Yellow)) = putStrLn "Yellow Wins!!!"
+outputMaybeWinner (Just (Win Game.Red)) = putStrLn "Red Wins!!!"
+outputMaybeWinner (Just Stalemate) = putStrLn "Stalemate...Sorry Folks"
 
 -- Returns true if the Verbose flag is present in the list of flags
 hasVerbose :: [Flag] -> Bool
