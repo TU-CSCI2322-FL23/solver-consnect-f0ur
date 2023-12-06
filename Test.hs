@@ -262,6 +262,44 @@ allTests =
     -- ... (other tests)
     ]
 
+-- Define some test boards
+testBoardInitial :: Board
+testBoardInitial = replicate 7 []
+
+testBoardMidGame :: Board
+testBoardMidGame = [
+    [Red, Yellow],
+    [Yellow, Red],
+    [],
+    [Red],
+    [],
+    [Yellow],
+    []
+    ]
+
+testBoardNearEndGame :: Board
+testBoardNearEndGame = [
+    [Red, Yellow, Red, Yellow, Red],
+    [Yellow, Red, Yellow, Red, Yellow],
+    [Red, Yellow, Red],
+    [Yellow, Red, Yellow, Red],
+    [Red, Yellow, Red, Yellow],
+    [Yellow, Red, Yellow, Red],
+    [Red, Yellow, Red, Yellow]
+    ]
+
+-- Test the whoMightWin function with different boards and depths
+testWhoMightWin :: IO ()
+testWhoMightWin = do
+    putStrLn "Testing Initial Game State"
+    print $ whoMightWin (testBoardInitial, Red) 3
+
+    putStrLn "Testing Mid-Game State"
+    print $ whoMightWin (testBoardMidGame, Yellow) 3
+
+    putStrLn "Testing Near End-Game State"
+    print $ whoMightWin (testBoardNearEndGame, Red) 3
+
 
 -- Run the tests
 main :: IO ()

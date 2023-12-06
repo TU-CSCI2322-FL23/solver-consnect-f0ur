@@ -307,17 +307,57 @@ diagonals board =
     in posDiags ++ negDiags
 
 -- Function to extract a diagonal from a given start position
+--chat gpt to fix the goddamn diag function
+safeIndex :: [a] -> Int -> Maybe a
+safeIndex xs i
+    | i < 0 || i >= length xs = Nothing
+    | otherwise = Just (xs !! i)
+
 diag :: Board -> (Int, Int) -> [Color]
-diag board (x,y) =
-    if x >= length board || y >= length (head board) || x < 0 || y < 0
-    then []
-    else (board !! x !! y) : diag board (x+dx, y+dy)
+diag board (x, y) = 
+    case safeIndex board x of
+        Nothing -> []
+        Just column -> 
+            case safeIndex column y of
+                Nothing -> []
+                Just color -> color : diag board (x + dx, y + dy)
     where
-        dx = if y == (length (head board) - 1) then 1 else -1
+        dx = if y == 0 then 1 else -1
         dy = 1
 
--- test board for debugging
+-- Estimates the best move and rating for the current player, considering a depth-limited lookahead.
+whoMightWin :: Game -> Int -> (Rating, Move)
+whoMightWin game depth = 
+    let moves = validMoves game
+        ratedMoves = rateMoves game depth moves
+    in bestRatedMove ratedMoves
 
+-- Rates each move by recursively evaluating the game state after the move, up to a given depth.
+rateMoves :: Game -> Int -> [Move] -> [(Rating, Move)]
+rateMoves game depth moves = 
+    [(rateMove (fromMaybe game (makeMove game move)) depth, move) | move <- moves]
+
+-- Rates a single move by recursively evaluating potential future game states.
+rateMove :: Game -> Int -> Rating
+rateMove game 0 = rateGame game 
+rateMove game depth =
+    let nextMoves = validMoves game
+    in if null nextMoves
+       then rateGame game 
+       else 
+           let nextGames = catMaybes [makeMove game move | move <- nextMoves]
+               nextRatings = map (\g -> rateMove g (depth - 1)) nextGames
+               currentPlayer = snd game
+               bestRating = if currentPlayer == Red then maximum nextRatings else minimum nextRatings
+           in bestRating
+
+-- Chooses the best-rated move.
+bestRatedMove :: [(Rating, Move)] -> (Rating, Move)
+bestRatedMove ratedMoves = 
+    let bestRating = maximum $ map fst ratedMoves
+    in head $ filter ((== bestRating) . fst) ratedMoves
+
+-- testing cases
 testBoard2 :: Board
 testBoard2 = [
     [],
@@ -326,7 +366,7 @@ testBoard2 = [
     [Yellow, Yellow, Red],
     [Yellow, Red, Red],
     [Red, Red],
-    [Yellow, Yellow, Yellow]
+    [Yellow, Yellow, Yellow, Yellow]
     ]
 
 testBoard :: Board
@@ -342,7 +382,7 @@ testBoard = [
 
 winningBoard :: Board
 winningBoard = [
-    [Yellow, Yellow, Yellow, Yellow, Red, Red, Red],
+    [Yellow, Yellow, Yellow, Red, Red, Red],
     [Red, Red, Red, Yellow, Red, Yellow, Yellow],
     [Yellow, Red, Yellow, Red, Yellow, Red, Red],
     [Red, Yellow, Red, Yellow, Red, Yellow, Yellow],
@@ -413,3 +453,48 @@ showWinner :: Winner -> String
 showWinner (Win Yellow) = "Yellow"
 showWinner (Win Red) = "Red"
 showWinner Stalemate = "Stalemate"
+
+
+--testing for whoMightWin
+
+testBoardInitial :: Board
+testBoardInitial = replicate 7 []
+
+testBoardMidGame :: Board
+testBoardMidGame = [
+    [Red, Yellow],
+    [Yellow, Red],
+    [],
+    [Red],
+    [],
+    [Yellow],
+    []
+    ]
+
+testBoardNearEndGame :: Board
+testBoardNearEndGame = [
+    [Red, Yellow, Red, Yellow, Red],
+    [Yellow, Red, Yellow, Red, Yellow],
+    [Red, Yellow, Red],
+    [Yellow, Red, Yellow, Red],
+    [Red, Yellow, Red, Yellow],
+    [Yellow, Red, Yellow, Red],
+    [Red, Yellow, Red, Yellow]
+    ]
+
+-- Test the whoMightWin function with different boards and depths
+testWhoMightWin :: IO ()
+testWhoMightWin = do
+    putStrLn "Testing Initial Game State"
+    print $ whoMightWin (testBoardInitial, Red) 3
+
+    putStrLn "Testing Mid-Game State"
+    print $ whoMightWin (testBoardMidGame, Red) 3
+
+    putStrLn "Testing Near End-Game State"
+    print $ whoMightWin (testBoardNearEndGame, Yellow) 3
+
+-- Run the test
+main :: IO ()
+main = testWhoMightWin
+
